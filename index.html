@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YATA - Payment Receipt Flow</title>
+<style>
+  :root{
+    --bg: #0b0b0c;
+    --panel: #131315;
+    --line: #3a352c;
+    --line-soft: #29261f;
+    --cream: #f2ead9;
+    --cream-dim: #cfc7b3;
+    --grey: #948f83;
+    --green: #7fae8e;
+    --amber: #d1a85e;
+    --rose: #c98b7a;
+  }
+  * { box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--cream-dim); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 40px 32px 90px; }
+  .wrap{ max-width: 640px; margin: 0 auto; }
+
+  .dev-bar{ border: 1px dashed var(--line); padding: 12px 14px; margin-bottom: 30px; }
+  .dev-bar .dev-label{ font-size: 10.5px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .dev-bar .dev-buttons{ display:flex; flex-wrap: wrap; gap: 6px; }
+  .dev-btn{ background:none; border: 1px solid var(--line); color: var(--cream-dim); padding: 5px 10px; font-size: 11px; cursor: pointer; }
+  .dev-btn.active{ border-color: var(--amber); color: var(--amber); }
+
+  .back{ color: var(--cream-dim); text-decoration: none; font-size: 14px; display:inline-block; margin-bottom: 20px; opacity: 0.8; }
+  h1{ font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 34px; color: var(--cream); margin: 0 0 24px; }
+
+  .screen{ display: none; }
+  .screen.active{ display: block; }
+
+  .history-row{ display:grid; grid-template-columns: 1fr 100px 90px 160px 90px; gap: 12px; align-items:center; border: 1px solid var(--line); padding: 0 18px; height: 64px; overflow: hidden; margin-bottom: 10px; }
+  .history-desc .h-student{ font-size: 15px; color: var(--cream); }
+  .history-desc .h-program{ font-size: 12.5px; color: var(--grey); margin-top: 2px; }
+  .history-amt{ text-align:center; font-size: 14px; color: var(--cream-dim); }
+  .history-date{ text-align:center; font-size: 12.5px; color: var(--grey); }
+  .history-row .status-tag{ justify-self:center; }
+  .history-row .link-btn{ justify-self:center; }
+  .history-head-row{ display:grid; grid-template-columns: 1fr 100px 90px 160px 90px; gap: 12px; padding: 0 18px; margin-bottom: 8px; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--grey); }
+  .history-head-row span:first-child{ text-align:left; }
+  .history-head-row span:not(:first-child){ text-align:center; }
+  .status-tag{ font-size: 10.5px; padding: 4px 4px; border: 1px solid; text-transform: uppercase; letter-spacing: 0.015em; width: 160px; box-sizing: border-box; text-align: center; white-space: nowrap; display: inline-block; }
+  .status-tag.paid{ color: var(--green); border-color: var(--green); }
+  .status-tag.no-due{ color: var(--grey); border-color: var(--grey); }
+  .status-tag.partial-refund{ color: var(--amber); border-color: var(--amber); }
+  .status-tag.refunded{ color: var(--amber); border-color: var(--amber); }
+  .link-btn{ background:none; border:none; color: var(--amber); font-size: 13px; cursor: pointer; padding: 0; text-decoration: underline; }
+
+  @media (max-width: 600px){
+    .history-head-row{ display:none; }
+    .history-row{ grid-template-columns: 1fr; height:auto; padding:16px 18px; row-gap:10px; align-items:start; }
+    .history-amt, .history-date{ text-align:left; justify-self:start; }
+    .history-amt::before{ content:"Amount"; display:block; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:var(--grey); margin-bottom:2px; }
+    .history-date::before{ content:"Date"; display:block; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:var(--grey); margin-bottom:2px; }
+    .history-row .status-tag{ justify-self:start; width:auto; }
+    .history-row .link-btn{ justify-self:start; }
+  }
+
+  .receipt{ border: 1px solid var(--line); padding: 30px 28px; }
+  .receipt-org{ font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); text-align:center; margin-bottom: 4px; }
+  .receipt-title{ font-family: Georgia, serif; font-size: 22px; color: var(--cream); text-align:center; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 26px; }
+  .receipt-line{ display:flex; justify-content: space-between; font-size: 14.5px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+  .receipt-line:last-of-type{ border-bottom: none; }
+  .receipt-line .k{ color: var(--grey); }
+  .receipt-line .v{ color: var(--cream-dim); }
+  .receipt-line.discount .v{ color: var(--rose); }
+  .receipt-line.total{ border-top: 1px solid var(--line-soft); margin-top: 4px; padding-top: 14px; }
+  .receipt-line.total .k{ color: var(--cream); font-weight:600; }
+  .receipt-line.total .v{ font-family: Georgia, serif; font-size: 19px; color: var(--cream); }
+  .receipt-line.total.zero .v{ color: var(--green); }
+  .status-badge{ text-align:center; margin: 18px 0 4px; }
+  .status-badge span{ font-size: 12px; padding: 5px 16px; border: 1px solid; text-transform: uppercase; letter-spacing: 0.04em; }
+  .status-badge .paid{ color: var(--green); border-color: var(--green); }
+  .status-badge .no-due{ color: var(--grey); border-color: var(--grey); }
+  .status-badge .partial{ color: var(--amber); border-color: var(--amber); }
+  .status-badge .refunded{ color: var(--amber); border-color: var(--amber); }
+  .receipt-id{ text-align:center; font-size: 11.5px; color: var(--grey); margin-top: 18px; }
+
+  .btn{ background: none; border: 1px solid var(--amber); color: var(--amber); padding: 11px 20px; font-size: 12.5px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; }
+  .btn:hover{ background: rgba(209,168,94,0.08); }
+  .btn.secondary{ border-color: var(--line); color: var(--cream-dim); }
+  .btn-row{ display:flex; gap: 12px; margin-top: 24px; justify-content: center; }
+
+  .success-badge{ text-align:center; margin-bottom: 20px; }
+  .success-badge .checkmark{ width: 46px; height:46px; border: 2px solid var(--green); border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 14px; color: var(--green); font-size: 22px; }
+  .success-title{ text-align:center; font-family: Georgia, serif; font-size: 20px; letter-spacing: 0.03em; color: var(--green); text-transform: uppercase; margin-bottom: 16px; }
+  .success-copy{ font-size: 14.5px; color: var(--cream-dim); line-height: 1.6; text-align:center; margin-bottom: 10px; }
+  .success-email{ font-family: Georgia, serif; font-size: 16px; color: var(--cream); text-align:center; margin-bottom: 22px; }
+
+  .email-mock{ border: 1px solid var(--line); background: #fff; color: #1a1a1a; padding: 26px 28px; font-family: -apple-system, sans-serif; }
+  .email-mock .e-meta{ font-size: 12px; color: #666; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #e5e5e5; }
+  .email-mock .e-meta .e-subject{ color: #1a1a1a; font-weight: 600; margin-top: 4px; }
+  .email-mock .e-opening{ font-size: 14px; line-height: 1.6; margin-bottom: 22px; }
+  .email-mock .e-org{ font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #888; margin-bottom: 4px; }
+  .email-mock .e-title{ font-family: Georgia, serif; font-size: 18px; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 22px; color: #1a1a1a; }
+  .email-mock .e-field{ margin-bottom: 16px; }
+  .email-mock .e-field .e-label{ font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: #888; margin-bottom: 3px; }
+  .email-mock .e-field .e-value{ font-size: 14.5px; color: #1a1a1a; }
+  .email-mock .e-payment-details{ margin: 4px 0 18px; padding: 12px 14px; background: #f7f5f0; }
+  .email-mock .e-pd-title{ font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: #888; margin-bottom: 8px; }
+  .email-mock .e-pd-line{ font-size: 13.5px; color: #444; padding: 3px 0; }
+  .email-mock .e-amount-paid{ margin: 0 0 18px; }
+  .email-mock .e-amount-paid .e-label{ font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: #888; margin-bottom: 4px; }
+  .email-mock .e-amount-paid .e-value{ font-family: Georgia, serif; font-size: 25px; font-weight: 600; color: #1a1a1a; }
+  .email-mock .e-footer{ margin-top: 22px; padding-top: 14px; border-top: 1px solid #e5e5e5; font-size: 11.5px; color: #888; line-height: 1.6; }
+  .dev-note{ font-size: 11px; color: var(--grey); margin: 0 0 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="dev-bar">
+    <div class="dev-label">Interaction-state preview (dev only, not part of the UI)</div>
+    <div class="dev-buttons">
+      <button class="dev-btn active" data-screen="history">1. Payment History (entry)</button>
+      <button class="dev-btn" data-screen="receipt-standard">2. Standard Paid Receipt</button>
+      <button class="dev-btn" data-screen="receipt-discounted">3. Discounted Paid Receipt</button>
+      <button class="dev-btn" data-screen="receipt-partial">4. Partially Refunded Receipt</button>
+      <button class="dev-btn" data-screen="receipt-full-refund">5. Fully Refunded Receipt</button>
+      <button class="dev-btn" data-screen="receipt-zero">6. No Payment Due Record</button>
+      <button class="dev-btn" data-screen="sent">7. Receipt Sent</button>
+      <button class="dev-btn" data-screen="email-standard">8. Standard Paid Receipt Email</button>
+      <button class="dev-btn" data-screen="email-refund">9. Updated Receipt Email (refund)</button>
+      <button class="dev-btn" data-screen="email-zero">10. No Payment Due Email</button>
+    </div>
+  </div>
+  <div class="dev-note">States 8-10 are emails YATA sends automatically (a successful payment, a successful refund, or a $0-discount completion) - separate from the manually-triggered Email Receipt button in states 2-6.</div>
+
+  <a class="back" href="#">&larr; Back to Payments</a>
+
+  <!-- 1. PAYMENT HISTORY -->
+  <div class="screen active" id="screen-history">
+    <h1>Payment History</h1>
+
+    <div class="history-head-row">
+      <span>Student / Program</span><span>Amount</span><span>Date</span><span>Status</span><span>View</span>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Emma Johnson</div><div class="h-program">Matilda JR. &middot; Production Tuition</div></div>
+      <span class="history-amt">$425.00</span>
+      <span class="history-date">09/17/26</span>
+      <span class="status-tag paid">Paid</span>
+      <button class="link-btn" onclick="goTo('receipt-standard')">View Receipt</button>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Jack Smith</div><div class="h-program">Shrek: The Musical &middot; Production Tuition</div></div>
+      <span class="history-amt">$300.00</span>
+      <span class="history-date">09/21/26</span>
+      <span class="status-tag paid">Paid</span>
+      <button class="link-btn" onclick="goTo('receipt-discounted')">View Receipt</button>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Jack Smith</div><div class="h-program">Fall Acting Intensive &middot; Class Tuition</div></div>
+      <span class="history-amt">$350.00</span>
+      <span class="history-date">09/05/26</span>
+      <span class="status-tag partial-refund">Partially Refunded</span>
+      <button class="link-btn" onclick="goTo('receipt-partial')">View Receipt</button>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Jack Smith</div><div class="h-program">Stripe Test Spring Musical &middot; Production Tuition</div></div>
+      <span class="history-amt">$0.00</span>
+      <span class="history-date">09/03/26</span>
+      <span class="status-tag refunded">Refunded</span>
+      <button class="link-btn" onclick="goTo('receipt-full-refund')">View Receipt</button>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Vivian Andermen</div><div class="h-program">Little Shop of Horrors &middot; Production Tuition</div></div>
+      <span class="history-amt">$0.00</span>
+      <span class="history-date">09/13/26</span>
+      <span class="status-tag no-due">No Payment Due</span>
+      <button class="link-btn" onclick="goTo('receipt-zero')">View Receipt</button>
+    </div>
+  </div>
+
+  <!-- 2. STANDARD PAID RECEIPT -->
+  <div class="screen" id="screen-receipt-standard">
+    <div class="receipt">
+      <div class="receipt-org">Young Actors Theater Academy</div>
+      <div class="receipt-title">Payment Receipt</div>
+      <div class="receipt-line"><span class="k">Student</span><span class="v">Emma Johnson</span></div>
+      <div class="receipt-line"><span class="k">Program</span><span class="v">Matilda JR.</span></div>
+      <div class="receipt-line"><span class="k">Payment For</span><span class="v">Production Tuition</span></div>
+      <div class="receipt-line total"><span class="k">Amount Paid</span><span class="v">$425.00</span></div>
+      <div class="receipt-line"><span class="k">Payment Date</span><span class="v">September 17, 2026</span></div>
+      <div class="receipt-line"><span class="k">Payment Method</span><span class="v">Mastercard &bull;&bull;&bull;&bull; 5678</span></div>
+      <div class="status-badge"><span class="paid">Paid</span></div>
+      <div class="receipt-id">Receipt No. YATA-2026-004521</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="emailReceipt()">Email Receipt</button>
+      <button class="btn secondary" onclick="goTo('history')">Back to Payment History</button>
+    </div>
+  </div>
+
+  <!-- 3. DISCOUNTED PAID RECEIPT -->
+  <div class="screen" id="screen-receipt-discounted">
+    <div class="receipt">
+      <div class="receipt-org">Young Actors Theater Academy</div>
+      <div class="receipt-title">Payment Receipt</div>
+      <div class="receipt-line"><span class="k">Student</span><span class="v">Jack Smith</span></div>
+      <div class="receipt-line"><span class="k">Program</span><span class="v">Shrek: The Musical</span></div>
+      <div class="receipt-line"><span class="k">Payment For</span><span class="v">Production Tuition</span></div>
+      <div class="receipt-line"><span class="k">Original Amount</span><span class="v">$450.00</span></div>
+      <div class="receipt-line discount"><span class="k">Family Discount</span><span class="v">-$100.00</span></div>
+      <div class="receipt-line discount"><span class="k">Discount Code &mdash; SHREK50</span><span class="v">-$50.00</span></div>
+      <div class="receipt-line total"><span class="k">Amount Paid</span><span class="v">$300.00</span></div>
+      <div class="receipt-line"><span class="k">Payment Date</span><span class="v">September 21, 2026</span></div>
+      <div class="receipt-line"><span class="k">Payment Method</span><span class="v">Visa &bull;&bull;&bull;&bull; 4242</span></div>
+      <div class="status-badge"><span class="paid">Paid</span></div>
+      <div class="receipt-id">Receipt No. YATA-2026-004538</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="emailReceipt()">Email Receipt</button>
+      <button class="btn secondary" onclick="goTo('history')">Back to Payment History</button>
+    </div>
+  </div>
+
+  <!-- 4. PARTIALLY REFUNDED RECEIPT -->
+  <div class="screen" id="screen-receipt-partial">
+    <div class="receipt">
+      <div class="receipt-org">Young Actors Theater Academy</div>
+      <div class="receipt-title">Payment Receipt</div>
+      <div class="receipt-line"><span class="k">Student</span><span class="v">Jack Smith</span></div>
+      <div class="receipt-line"><span class="k">Program</span><span class="v">Fall Acting Intensive</span></div>
+      <div class="receipt-line"><span class="k">Payment For</span><span class="v">Class Tuition</span></div>
+      <div class="receipt-line"><span class="k">Original Amount Charged</span><span class="v">$450.00</span></div>
+      <div class="receipt-line discount"><span class="k">Refund</span><span class="v">-$100.00</span></div>
+      <div class="receipt-line total"><span class="k">Amount Paid</span><span class="v">$350.00</span></div>
+      <div class="receipt-line"><span class="k">Original Payment Date</span><span class="v">September 5, 2026</span></div>
+      <div class="receipt-line"><span class="k">Refund Date</span><span class="v">September 12, 2026</span></div>
+      <div class="receipt-line"><span class="k">Payment Method</span><span class="v">Visa &bull;&bull;&bull;&bull; 4242</span></div>
+      <div class="status-badge"><span class="partial">Partially Refunded</span></div>
+      <div class="receipt-id">Receipt No. YATA-2026-004389</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="emailReceipt()">Email Receipt</button>
+      <button class="btn secondary" onclick="goTo('history')">Back to Payment History</button>
+    </div>
+  </div>
+
+  <!-- 5. FULLY REFUNDED RECEIPT -->
+  <div class="screen" id="screen-receipt-full-refund">
+    <div class="receipt">
+      <div class="receipt-org">Young Actors Theater Academy</div>
+      <div class="receipt-title">Payment Receipt</div>
+      <div class="receipt-line"><span class="k">Student</span><span class="v">Jack Smith</span></div>
+      <div class="receipt-line"><span class="k">Program</span><span class="v">Stripe Test Spring Musical</span></div>
+      <div class="receipt-line"><span class="k">Payment For</span><span class="v">Production Tuition</span></div>
+      <div class="receipt-line"><span class="k">Original Amount Charged</span><span class="v">$450.00</span></div>
+      <div class="receipt-line discount"><span class="k">Refund</span><span class="v">-$450.00</span></div>
+      <div class="receipt-line total zero"><span class="k">Amount Paid</span><span class="v">$0.00</span></div>
+      <div class="receipt-line"><span class="k">Original Payment Date</span><span class="v">September 3, 2026</span></div>
+      <div class="receipt-line"><span class="k">Refund Date</span><span class="v">September 8, 2026</span></div>
+      <div class="receipt-line"><span class="k">Payment Method</span><span class="v">Visa &bull;&bull;&bull;&bull; 4242</span></div>
+      <div class="status-badge"><span class="refunded">Refunded</span></div>
+      <div class="receipt-id">Receipt No. YATA-2026-004201</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="emailReceipt()">Email Receipt</button>
+      <button class="btn secondary" onclick="goTo('history')">Back to Payment History</button>
+    </div>
+  </div>
+
+  <!-- 6. $0 / NO PAYMENT DUE RECORD -->
+  <div class="screen" id="screen-receipt-zero">
+    <div class="receipt">
+      <div class="receipt-org">Young Actors Theater Academy</div>
+      <div class="receipt-title">Payment Record</div>
+      <div class="receipt-line"><span class="k">Student</span><span class="v">Vivian Andermen</span></div>
+      <div class="receipt-line"><span class="k">Program</span><span class="v">Little Shop of Horrors</span></div>
+      <div class="receipt-line"><span class="k">Payment For</span><span class="v">Production Tuition</span></div>
+      <div class="receipt-line"><span class="k">Original Amount</span><span class="v">$575.00</span></div>
+      <div class="receipt-line discount"><span class="k">Family Discount</span><span class="v">-$575.00</span></div>
+      <div class="receipt-line total zero"><span class="k">Amount Paid</span><span class="v">$0.00</span></div>
+      <div class="receipt-line"><span class="k">Completed</span><span class="v">September 13, 2026</span></div>
+      <div class="status-badge"><span class="no-due">No Payment Due</span></div>
+      <div class="receipt-id">Receipt No. YATA-2026-004488</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="emailReceipt()">Email Receipt</button>
+      <button class="btn secondary" onclick="goTo('history')">Back to Payment History</button>
+    </div>
+  </div>
+
+  <!-- 7. RECEIPT SENT -->
+  <div class="screen" id="screen-sent">
+    <div class="success-badge"><div class="checkmark">&#10003;</div></div>
+    <div class="success-title">Receipt Sent</div>
+    <div class="success-copy">We've sent a copy to:</div>
+    <div class="success-email">mary.johnson@email.com</div>
+    <div class="btn-row">
+      <button class="btn" onclick="goTo('history')">Done</button>
+    </div>
+  </div>
+
+  <!-- 8. STANDARD PAID RECEIPT EMAIL -->
+  <div class="screen" id="screen-email-standard">
+    <h1>Automatic Email</h1>
+    <div class="email-mock">
+      <div class="e-meta">
+        From: Young Actors Theater Academy &lt;info@yatafrisco.com&gt;<br>
+        To: mary.johnson@email.com
+        <div class="e-subject">Subject: Payment Receipt &mdash; Emma Johnson &mdash; Matilda JR.</div>
+      </div>
+      <div class="e-opening">
+        Hi Mary,<br><br>
+        Thank you. We've received your payment for Emma Johnson's Matilda JR. production tuition.
+      </div>
+      <div class="e-org">Young Actors Theater Academy</div>
+      <div class="e-title">Payment Receipt</div>
+
+      <div class="e-field"><div class="e-label">Student</div><div class="e-value">Emma Johnson</div></div>
+      <div class="e-field"><div class="e-label">Program</div><div class="e-value">Matilda JR.</div></div>
+      <div class="e-field"><div class="e-label">Payment For</div><div class="e-value">Production Tuition</div></div>
+
+      <div class="e-amount-paid"><div class="e-label">Amount Paid</div><div class="e-value">$425.00</div></div>
+
+      <div class="e-field"><div class="e-label">Payment Date</div><div class="e-value">September 17, 2026</div></div>
+      <div class="e-field"><div class="e-label">Payment Method</div><div class="e-value">Mastercard &bull;&bull;&bull;&bull; 5678</div></div>
+      <div class="e-field"><div class="e-label">Status</div><div class="e-value">Paid</div></div>
+      <div class="e-field"><div class="e-label">Receipt No.</div><div class="e-value">YATA-2026-004521</div></div>
+
+      <div class="e-footer">Young Actors Theater Academy<br>This email is a receipt for your records.</div>
+    </div>
+  </div>
+
+  <!-- 9. UPDATED RECEIPT EMAIL (REFUND) -->
+  <div class="screen" id="screen-email-refund">
+    <h1>Automatic Email</h1>
+    <div class="email-mock">
+      <div class="e-meta">
+        From: Young Actors Theater Academy &lt;info@yatafrisco.com&gt;<br>
+        To: mary.johnson@email.com
+        <div class="e-subject">Subject: Updated Payment Receipt &mdash; Jack Smith &mdash; Fall Acting Intensive</div>
+      </div>
+      <div class="e-opening">
+        Hi Mary,<br><br>
+        A $100.00 refund has been processed for Jack Smith's Fall Acting Intensive class tuition. Your updated receipt is below.
+      </div>
+      <div class="e-org">Young Actors Theater Academy</div>
+      <div class="e-title">Updated Payment Receipt</div>
+
+      <div class="e-field"><div class="e-label">Student</div><div class="e-value">Jack Smith</div></div>
+      <div class="e-field"><div class="e-label">Program</div><div class="e-value">Fall Acting Intensive</div></div>
+      <div class="e-field"><div class="e-label">Payment For</div><div class="e-value">Class Tuition</div></div>
+
+      <div class="e-payment-details">
+        <div class="e-pd-title">Payment Details</div>
+        <div class="e-pd-line">Original Amount Charged: $450.00</div>
+        <div class="e-pd-line">Refund &mdash; September 12, 2026: -$100.00</div>
+      </div>
+
+      <div class="e-amount-paid"><div class="e-label">Amount Paid</div><div class="e-value">$350.00</div></div>
+
+      <div class="e-field"><div class="e-label">Original Payment Date</div><div class="e-value">September 5, 2026</div></div>
+      <div class="e-field"><div class="e-label">Payment Method</div><div class="e-value">Visa &bull;&bull;&bull;&bull; 4242</div></div>
+      <div class="e-field"><div class="e-label">Status</div><div class="e-value">Partially Refunded</div></div>
+      <div class="e-field"><div class="e-label">Receipt No.</div><div class="e-value">YATA-2026-004389</div></div>
+
+      <div class="e-footer">Young Actors Theater Academy<br>This email is an updated receipt for your records.</div>
+    </div>
+  </div>
+
+  <!-- 10. NO PAYMENT DUE EMAIL -->
+  <div class="screen" id="screen-email-zero">
+    <h1>Automatic Email</h1>
+    <div class="email-mock">
+      <div class="e-meta">
+        From: Young Actors Theater Academy &lt;info@yatafrisco.com&gt;<br>
+        To: karen.andermen@email.com
+        <div class="e-subject">Subject: Payment Record &mdash; Vivian Andermen &mdash; Little Shop of Horrors</div>
+      </div>
+      <div class="e-opening">
+        Hi Karen,<br><br>
+        Vivian Andermen's production tuition for Little Shop of Horrors has been fully covered by applicable discounts. No payment is due.
+      </div>
+      <div class="e-org">Young Actors Theater Academy</div>
+      <div class="e-title">Payment Record</div>
+
+      <div class="e-field"><div class="e-label">Student</div><div class="e-value">Vivian Andermen</div></div>
+      <div class="e-field"><div class="e-label">Program</div><div class="e-value">Little Shop of Horrors</div></div>
+      <div class="e-field"><div class="e-label">Payment For</div><div class="e-value">Production Tuition</div></div>
+
+      <div class="e-payment-details">
+        <div class="e-pd-title">Payment Details</div>
+        <div class="e-pd-line">Original Amount: $575.00</div>
+        <div class="e-pd-line">Family Discount: -$575.00</div>
+      </div>
+
+      <div class="e-amount-paid"><div class="e-label">Amount Paid</div><div class="e-value">$0.00</div></div>
+
+      <div class="e-field"><div class="e-label">Completed</div><div class="e-value">September 13, 2026</div></div>
+      <div class="e-field"><div class="e-label">Status</div><div class="e-value">No Payment Due</div></div>
+      <div class="e-field"><div class="e-label">Receipt No.</div><div class="e-value">YATA-2026-004488</div></div>
+
+      <div class="e-footer">Young Actors Theater Academy<br>This email is a receipt for your records.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function goTo(screenId){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screenId).classList.add('active');
+  document.querySelectorAll('.dev-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === screenId));
+}
+
+function emailReceipt(){
+  goTo('sent');
+}
+
+document.querySelectorAll('.dev-btn').forEach(btn => {
+  btn.addEventListener('click', () => goTo(btn.dataset.screen));
+});
+</script>
+</body>
+</html>
