@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YATA - Change Payment Method (Upcoming Scheduled Charge)</title>
+<style>
+  :root{
+    --bg: #0b0b0c;
+    --panel: #131315;
+    --line: #3a352c;
+    --line-soft: #29261f;
+    --cream: #f2ead9;
+    --cream-dim: #cfc7b3;
+    --grey: #948f83;
+    --green: #7fae8e;
+    --amber: #d1a85e;
+    --rose: #c98b7a;
+  }
+  * { box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--cream-dim); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 40px 32px 90px; }
+  .wrap{ max-width: 620px; margin: 0 auto; }
+
+  .dev-bar{ border: 1px dashed var(--line); padding: 12px 14px; margin-bottom: 30px; }
+  .dev-bar .dev-label{ font-size: 10.5px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .dev-bar .dev-buttons{ display:flex; flex-wrap: wrap; gap: 6px; }
+  .dev-btn{ background:none; border: 1px solid var(--line); color: var(--cream-dim); padding: 5px 10px; font-size: 11px; cursor: pointer; }
+  .dev-btn.active{ border-color: var(--amber); color: var(--amber); }
+
+  .back{ color: var(--cream-dim); text-decoration: none; font-size: 14px; display:inline-block; margin-bottom: 20px; opacity: 0.8; }
+  h1{ font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 34px; color: var(--cream); margin: 0 0 26px; }
+
+  .screen{ display: none; }
+  .screen.active{ display: block; }
+
+  .obligation-context{ border: 1px solid var(--line); padding: 20px 22px; margin-bottom: 22px; }
+  .obl-name{ font-family: Georgia, serif; font-size: 18px; color: var(--cream); margin-bottom: 2px; }
+  .obl-sub{ font-size: 13px; color: var(--grey); margin-bottom: 16px; }
+  .obl-line{ display:flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+  .obl-line .k{ color: var(--grey); }
+  .obl-line .v{ color: var(--cream-dim); }
+  .obl-line.strong .v{ color: var(--cream); font-weight: 600; }
+
+  .panel-label{ font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); margin: 22px 0 12px; }
+
+  .radio-row{ display:flex; align-items:center; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); margin-bottom: 10px; cursor: pointer; }
+  .radio-row:hover{ border-color: var(--cream-dim); }
+  .radio-row.selected{ border-color: var(--amber); background: rgba(209,168,94,0.05); }
+  .radio-dot{ width: 16px; height: 16px; border: 1px solid var(--grey); border-radius: 50%; flex-shrink:0; position: relative; }
+  .radio-row.selected .radio-dot{ border-color: var(--amber); }
+  .radio-row.selected .radio-dot::after{ content:""; position:absolute; top:3px; left:3px; width:8px; height:8px; border-radius:50%; background: var(--amber); }
+  .radio-text{ font-size: 14.5px; color: var(--cream-dim); }
+  .radio-tag{ font-size: 10.5px; color: var(--green); border: 1px solid var(--green); padding: 2px 7px; margin-left: 8px; text-transform: uppercase; }
+
+  .btn{ background: none; border: 1px solid var(--amber); color: var(--amber); padding: 11px 20px; font-size: 12.5px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; }
+  .btn:hover{ background: rgba(209,168,94,0.08); }
+  .btn.secondary{ border-color: var(--line); color: var(--cream-dim); }
+  .btn:disabled{ opacity: 0.35; cursor: default; }
+  .btn-row{ display:flex; gap: 12px; margin-top: 22px; }
+  .link-btn{ background:none; border:none; color: var(--amber); font-size: 13px; cursor: pointer; padding: 0; text-decoration: underline; }
+  .link-btn.disabled-look{ color: var(--grey); text-decoration: none; cursor: default; }
+  .action-row{ display:flex; gap: 18px; margin-top: 8px; }
+
+  .field{ margin-bottom: 14px; }
+  .field label{ display:block; font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--grey); margin-bottom: 6px; }
+  .field input{ width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 10px 12px; font-size: 14px; }
+  .field-row{ display:flex; gap: 12px; }
+  .field-row .field{ flex:1; }
+
+  .note-box{ border: 1px solid var(--line-soft); padding: 12px 14px; font-size: 12.5px; color: var(--grey); margin-top: 6px; }
+
+  .spinner{ width: 30px; height: 30px; border: 3px solid var(--line); border-top-color: var(--amber); border-radius: 50%; margin: 30px auto 20px; animation: spin 0.9s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .center-text{ text-align:center; font-size: 14px; color: var(--cream-dim); }
+
+  .success-badge{ text-align:center; margin-bottom: 20px; }
+  .success-badge .checkmark{ width: 46px; height:46px; border: 2px solid var(--green); border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 14px; color: var(--green); font-size: 22px; }
+  .success-title{ text-align:center; font-family: Georgia, serif; font-size: 20px; letter-spacing: 0.03em; color: var(--green); text-transform: uppercase; margin-bottom: 16px; }
+  .success-copy{ font-size: 14.5px; color: var(--cream-dim); line-height: 1.6; text-align:center; margin-bottom: 16px; }
+  .no-charge-note{ border: 1px solid var(--line); padding: 12px 16px; font-size: 13px; color: var(--cream-dim); text-align:center; margin-bottom: 22px; }
+
+  .fail-badge{ text-align:center; margin-bottom: 18px; }
+  .fail-badge .x-mark{ width: 46px; height:46px; border: 2px solid var(--rose); border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 14px; color: var(--rose); font-size: 20px; }
+  .fail-title{ text-align:center; font-family: Georgia, serif; font-size: 19px; letter-spacing: 0.02em; color: var(--rose); text-transform: uppercase; margin-bottom: 14px; }
+  .fail-copy{ font-size: 14px; color: var(--cream-dim); text-align:center; line-height:1.6; margin-bottom: 20px; }
+
+  .two-col{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .mini-card{ border: 1px solid var(--line); padding: 16px 18px; }
+  .mini-card .m-name{ font-family: Georgia, serif; font-size: 15px; color: var(--cream); margin-bottom: 2px; }
+  .mini-card .m-sub{ font-size: 11.5px; color: var(--grey); margin-bottom: 10px; }
+  .mini-card .m-line{ font-size: 12.5px; color: var(--cream-dim); padding: 2px 0; }
+  .mini-card .m-method{ color: var(--amber); margin-top: 6px; display:block; }
+  .highlight-changed{ border-color: var(--amber); }
+
+  .section-title{ font-family: Georgia, serif; font-size: 18px; color: var(--cream); margin: 0 0 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="dev-bar">
+    <div class="dev-label">Interaction-state preview (dev only, not part of the UI)</div>
+    <div class="dev-buttons">
+      <button class="dev-btn active" data-screen="entry">1. Upcoming Charge (entry)</button>
+      <button class="dev-btn" data-screen="select">2. Change Payment Method</button>
+      <button class="dev-btn" data-screen="addcard">3. Add a New Card</button>
+      <button class="dev-btn" data-screen="confirm">4. Confirm Change</button>
+      <button class="dev-btn" data-screen="validating">5. Validating</button>
+      <button class="dev-btn" data-screen="success">6. Success</button>
+      <button class="dev-btn" data-screen="updated">7. Updated Upcoming Charges</button>
+      <button class="dev-btn" data-screen="failure">8. Failure / Cancellation</button>
+    </div>
+  </div>
+
+  <a class="back" href="#">&larr; Back to Payments</a>
+
+  <!-- STATE ENTRY -->
+  <div class="screen active" id="screen-entry">
+    <h1>Upcoming Charge</h1>
+    <div class="obligation-context">
+      <div class="obl-name">Jack Smith</div>
+      <div class="obl-sub">Shrek: The Musical &middot; Production Tuition</div>
+      <div class="obl-line"><span class="k">Original Tuition</span><span class="v">$450.00</span></div>
+      <div class="obl-line"><span class="k">Discount</span><span class="v" style="color:var(--rose)">-$100.00</span></div>
+      <div class="obl-line strong"><span class="k">Scheduled Amount</span><span class="v">$350.00</span></div>
+      <div class="obl-line"><span class="k">Scheduled for</span><span class="v">September 21, 2026</span></div>
+      <div class="obl-line"><span class="k">Current Payment Method</span><span class="v">Visa &bull;&bull;&bull;&bull; 4242</span></div>
+    </div>
+    <div class="action-row">
+      <button class="link-btn" onclick="goTo('select')">Change Payment Method</button>
+      <span class="link-btn disabled-look">Apply Discount Code</span>
+    </div>
+  </div>
+
+  <!-- STATE 1: SELECT -->
+  <div class="screen" id="screen-select">
+    <h1>Change Payment Method</h1>
+    <div class="obligation-context">
+      <div class="obl-name">Jack Smith</div>
+      <div class="obl-sub">Shrek: The Musical &middot; Production Tuition</div>
+      <div class="obl-line strong"><span class="k">Scheduled Amount</span><span class="v">$350.00</span></div>
+      <div class="obl-line"><span class="k">Scheduled for</span><span class="v">September 21, 2026</span></div>
+      <div class="obl-line"><span class="k">Current Payment Method</span><span class="v">Visa &bull;&bull;&bull;&bull; 4242</span></div>
+    </div>
+
+    <div class="panel-label">Choose a payment method for this charge only</div>
+    <div class="radio-row selected" data-value="visa" onclick="selectRadio(this,'visa')">
+      <div class="radio-dot"></div>
+      <div class="radio-text">Visa &bull;&bull;&bull;&bull; 4242 <span class="radio-tag">Current</span></div>
+    </div>
+    <div class="radio-row" data-value="mastercard" onclick="selectRadio(this,'mastercard')">
+      <div class="radio-dot"></div>
+      <div class="radio-text">Mastercard &bull;&bull;&bull;&bull; 5678</div>
+    </div>
+    <div class="radio-row" data-value="new" onclick="selectRadio(this,'new')">
+      <div class="radio-dot"></div>
+      <div class="radio-text">Add a new card</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" id="select-continue-btn" onclick="continueFromSelect()" disabled>Continue</button>
+      <button class="btn secondary" onclick="goTo('entry')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- STATE: ADD NEW CARD -->
+  <div class="screen" id="screen-addcard">
+    <h1>Add a New Card</h1>
+    <div class="obligation-context">
+      <div class="obl-name">Jack Smith</div>
+      <div class="obl-sub">Shrek: The Musical &middot; Production Tuition &middot; $350.00 scheduled for September 21, 2026</div>
+    </div>
+    <div class="panel-label">Card details</div>
+    <div class="field">
+      <label>Name on Card</label>
+      <input type="text" placeholder="Jane Smith">
+    </div>
+    <div class="field">
+      <label>Card Number</label>
+      <input type="text" placeholder="1234 1234 1234 1234">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Expiration</label>
+        <input type="text" placeholder="MM / YY">
+      </div>
+      <div class="field">
+        <label>CVC</label>
+        <input type="text" placeholder="CVC">
+      </div>
+    </div>
+    <div class="note-box">This card will be securely saved to your Payment Methods for future use.</div>
+    <div class="btn-row">
+      <button class="btn" onclick="submitNewCard()">Continue</button>
+      <button class="btn secondary" onclick="goTo('select')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- STATE 2: CONFIRM -->
+  <div class="screen" id="screen-confirm">
+    <h1>Confirm Payment Method</h1>
+    <div class="obligation-context">
+      <div class="obl-name">Jack Smith</div>
+      <div class="obl-sub">Shrek: The Musical &middot; Production Tuition</div>
+      <div class="obl-line strong"><span class="k">Amount</span><span class="v">$350.00</span></div>
+      <div class="obl-line"><span class="k">Scheduled for</span><span class="v">September 21, 2026</span></div>
+      <div class="obl-line"><span class="k">New Payment Method</span><span class="v" id="confirm-new-method" style="color:var(--amber)">Mastercard &bull;&bull;&bull;&bull; 5678</span></div>
+      <div class="obl-line"><span class="k">Previous Payment Method</span><span class="v">Visa &bull;&bull;&bull;&bull; 4242</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="goTo('validating')">Confirm Payment Method</button>
+      <button class="btn secondary" onclick="goTo('select')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- STATE: VALIDATING -->
+  <div class="screen" id="screen-validating">
+    <h1>Validating Payment Method</h1>
+    <div class="spinner"></div>
+    <div class="center-text">Updating your payment method...</div>
+    <div class="btn-row" style="justify-content:center; margin-top:30px;">
+      <button class="btn secondary" onclick="goTo('failure')">Dev: simulate failure</button>
+    </div>
+  </div>
+
+  <!-- STATE 3: SUCCESS -->
+  <div class="screen" id="screen-success">
+    <div class="success-badge">
+      <div class="checkmark">&#10003;</div>
+    </div>
+    <div class="success-title">Payment Method Updated</div>
+    <div class="success-copy">
+      Your $350.00 payment for Jack Smith's Shrek: The Musical production tuition is now scheduled to<br>
+      <strong style="color:var(--cream)" id="success-method">Mastercard &bull;&bull;&bull;&bull; 5678</strong> on September 21, 2026.
+    </div>
+    <div class="no-charge-note">Visa &bull;&bull;&bull;&bull; 4242 will not be charged for this transaction.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn" onclick="finishToUpdated()">Done</button>
+    </div>
+  </div>
+
+  <!-- STATE 4: UPDATED UPCOMING CHARGES -->
+  <div class="screen" id="screen-updated">
+    <h1>Upcoming Charges</h1>
+    <div class="two-col">
+      <div class="mini-card highlight-changed">
+        <div class="m-name">Jack Smith</div>
+        <div class="m-sub">Shrek: The Musical &middot; Production Tuition</div>
+        <div class="m-line">Scheduled Amount: $350.00</div>
+        <div class="m-line">Scheduled for September 21, 2026</div>
+        <span class="m-method" id="updated-jack-method">Mastercard &bull;&bull;&bull;&bull; 5678</span>
+      </div>
+      <div class="mini-card">
+        <div class="m-name">Jill Smith</div>
+        <div class="m-sub">Shrek: The Musical &middot; Production Tuition</div>
+        <div class="m-line">Scheduled Amount: $450.00</div>
+        <div class="m-line">Scheduled for September 21, 2026</div>
+        <span class="m-method">Mastercard &bull;&bull;&bull;&bull; 5678</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="link-btn" onclick="resetDemo()">Start over</button>
+    </div>
+  </div>
+
+  <!-- STATE 8: FAILURE -->
+  <div class="screen" id="screen-failure">
+    <div class="fail-badge">
+      <div class="x-mark">&times;</div>
+    </div>
+    <div class="fail-title">Payment Method Could Not Be Validated</div>
+    <div class="fail-copy">
+      We weren't able to verify this card. Visa &bull;&bull;&bull;&bull; 4242 remains the payment method<br>
+      for Jack Smith's $350.00 Shrek tuition, scheduled for September 21, 2026.<br>
+      Nothing has changed.
+    </div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn" onclick="goTo('select')">Try Again</button>
+      <button class="btn secondary" onclick="goTo('entry')">Cancel</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let pendingMethod = "Mastercard &bull;&bull;&bull;&bull; 5678";
+let selectedValue = "visa";
+
+function goTo(screenId){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screenId).classList.add('active');
+  document.querySelectorAll('.dev-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === screenId));
+}
+
+function selectRadio(el, value){
+  document.querySelectorAll('.radio-row').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedValue = value;
+  const continueBtn = document.getElementById('select-continue-btn');
+  continueBtn.disabled = (value === 'visa');
+}
+
+function continueFromSelect(){
+  if(selectedValue === 'mastercard'){
+    pendingMethod = "Mastercard &bull;&bull;&bull;&bull; 5678";
+    document.getElementById('confirm-new-method').innerHTML = pendingMethod;
+    goTo('confirm');
+  } else if(selectedValue === 'new'){
+    goTo('addcard');
+  }
+}
+
+function submitNewCard(){
+  pendingMethod = "Visa &bull;&bull;&bull;&bull; 9012";
+  document.getElementById('confirm-new-method').innerHTML = pendingMethod;
+  goTo('confirm');
+}
+
+// auto-advance from validating to success after a short delay, simulating real Stripe validation
+document.getElementById('screen-validating').addEventListener('transitionend', function(){});
+const observer = new MutationObserver(() => {
+  if(document.getElementById('screen-validating').classList.contains('active')){
+    setTimeout(() => {
+      if(document.getElementById('screen-validating').classList.contains('active')){
+        document.getElementById('success-method').innerHTML = pendingMethod;
+        goTo('success');
+      }
+    }, 1600);
+  }
+});
+observer.observe(document.getElementById('screen-validating'), { attributes: true, attributeFilter: ['class'] });
+
+function finishToUpdated(){
+  document.getElementById('updated-jack-method').innerHTML = pendingMethod;
+  goTo('updated');
+}
+
+function resetDemo(){
+  pendingMethod = "Mastercard &bull;&bull;&bull;&bull; 5678";
+  selectedValue = "visa";
+  document.querySelectorAll('.radio-row').forEach(r => r.classList.remove('selected'));
+  document.querySelector('.radio-row[data-value="visa"]').classList.add('selected');
+  document.getElementById('select-continue-btn').disabled = true;
+  document.getElementById('updated-jack-method').innerHTML = "Visa &bull;&bull;&bull;&bull; 4242";
+  goTo('entry');
+}
+
+document.querySelectorAll('.dev-btn').forEach(btn => {
+  btn.addEventListener('click', () => goTo(btn.dataset.screen));
+});
+</script>
+</body>
+</html>
