@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YATA - Parent Portal - Payments</title>
+<style>
+  :root{
+    --bg: #0b0b0c;
+    --panel: #131315;
+    --line: #3a352c;
+    --line-soft: #29261f;
+    --cream: #f2ead9;
+    --cream-dim: #cfc7b3;
+    --grey: #948f83;
+    --green: #7fae8e;
+    --amber: #d1a85e;
+    --rose: #c98b7a;
+  }
+  * { box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--cream-dim); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 40px 32px 90px; }
+  .wrap{ max-width: 780px; margin: 0 auto; }
+
+  .demo-toggle{ display:flex; gap:8px; margin-bottom: 30px; border: 1px dashed var(--line); padding: 10px 14px; }
+  .demo-toggle span{ font-size: 11px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.05em; align-self:center; margin-right: 6px; }
+  .demo-btn{ background:none; border: 1px solid var(--line); color: var(--cream-dim); padding: 6px 12px; font-size: 12px; cursor: pointer; }
+  .demo-btn.active{ border-color: var(--amber); color: var(--amber); }
+
+  .back{ color: var(--cream-dim); text-decoration: none; font-size: 14px; display:inline-block; margin-bottom: 20px; opacity: 0.8; }
+  h1{ font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 46px; color: var(--cream); margin: 0 0 24px; }
+
+  .summary-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 34px; }
+  .summary-card{ border: 1px solid var(--line); padding: 16px 18px; }
+  .summary-card .label{ font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--grey); margin-bottom: 8px; }
+  .summary-card .value{ font-family: Georgia, serif; font-size: 24px; color: var(--cream); }
+  .summary-card.zero .value{ color: var(--green); }
+  .summary-card.due .value{ color: var(--rose); }
+
+  .section{ margin-bottom: 38px; }
+  .section-title{ font-family: Georgia, serif; font-size: 15px; letter-spacing: 0.06em; color: var(--grey); text-transform: uppercase; margin: 0 0 14px; }
+
+  .action-card{
+    border: 1px solid var(--rose); background: rgba(201,139,122,0.05);
+    padding: 20px 22px; margin-bottom: 12px;
+  }
+  .obl-name{ font-family: Georgia, serif; font-size: 17px; color: var(--cream); margin-bottom: 2px; }
+  .obl-sub{ font-size: 12.5px; color: var(--grey); margin-bottom: 14px; }
+  .action-amt-row{ display:flex; justify-content: space-between; align-items:baseline; margin-bottom: 10px; }
+  .action-amt{ font-family: Georgia, serif; font-size: 22px; color: var(--cream); }
+  .status-tag{ font-size: 10.5px; padding: 4px 4px; border: 1px solid; text-transform: uppercase; letter-spacing: 0.015em; width: 160px; box-sizing: border-box; text-align: center; white-space: nowrap; display: inline-block; }
+  .status-tag.overdue{ color: var(--rose); border-color: var(--rose); }
+  .status-tag.paid{ color: var(--green); border-color: var(--green); }
+  .status-tag.no-due{ color: var(--grey); border-color: var(--grey); }
+  .status-tag.refunded{ color: var(--amber); border-color: var(--amber); }
+  .status-tag.partial-refund{ color: var(--amber); border-color: var(--amber); }
+  .fail-reason{ font-size: 13px; color: var(--cream-dim); margin-bottom: 16px; line-height: 1.5; }
+  .fail-reason .fail-date{ color: var(--grey); display:block; margin-bottom: 2px; }
+
+  .btn{ background: none; border: 1px solid var(--amber); color: var(--amber); padding: 10px 18px; font-size: 12.5px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; }
+  .btn:hover{ background: rgba(209,168,94,0.08); }
+  .btn.secondary{ border-color: var(--line); color: var(--cream-dim); }
+  .link-btn{ background:none; border:none; color: var(--amber); font-size: 12.5px; cursor: pointer; padding: 0; text-decoration: underline; }
+
+  .healthy-note{ border: 1px solid var(--line-soft); padding: 18px 20px; color: var(--grey); font-size: 13.5px; text-align:center; }
+
+  .obligation-card{ border: 1px solid var(--line); padding: 20px 22px; margin-bottom: 12px; display:flex; flex-direction:column; }
+  .amt-breakdown{ margin: 12px 0 14px; min-height: 78px; }
+  .amt-line{ display:flex; justify-content: space-between; font-size: 13.5px; padding: 3px 0; color: var(--cream-dim); }
+  .amt-line.discount{ color: var(--rose); }
+  .amt-line.placeholder{ visibility: hidden; }
+  .amt-line-spacer{ height: 22px; }
+  .amt-line.scheduled{ font-weight:600; color: var(--cream); border-top: 1px solid var(--line-soft); margin-top: 4px; padding-top: 8px; }
+  .charge-meta{ display:flex; justify-content: space-between; align-items:center; font-size: 13px; color: var(--grey); margin-bottom: 14px; }
+  .payment-method{ color: var(--cream-dim); }
+  .obligation-actions{ display:flex; gap: 18px; }
+
+  .change-method-panel{ display:none; margin-top: 14px; padding: 14px 16px; border: 1px solid var(--line-soft); background: rgba(255,255,255,0.015); }
+  .change-method-panel.open{ display:block; }
+  .change-method-panel select{ background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 8px 10px; font-size: 13px; width: 100%; margin-bottom: 10px; }
+  .discount-panel{ display:none; margin-top: 14px; padding: 14px 16px; border: 1px solid var(--line-soft); background: rgba(255,255,255,0.015); }
+  .discount-panel.open{ display:block; }
+  .discount-panel input{ background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 8px 10px; font-size: 13px; width: 60%; margin-right: 8px; }
+
+  .card-row{ display:flex; justify-content: space-between; align-items:center; border: 1px solid var(--line); padding: 14px 18px; margin-bottom: 10px; }
+  .card-info{ font-size: 14px; color: var(--cream-dim); }
+  .card-info .card-brand{ color: var(--cream); }
+
+  .history-row{ display:grid; grid-template-columns: 1fr 100px 90px 160px 90px; gap: 12px; align-items:center; border: 1px solid var(--line); padding: 0 18px; margin-bottom: 10px; height: 64px; overflow: hidden; }
+  .history-desc{ min-width: 0; }
+  .history-desc .h-student{ font-size: 15px; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-desc .h-program{ font-size: 12.5px; color: var(--grey); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-amt{ text-align:center; font-size: 14px; color: var(--cream-dim); }
+  .history-date{ text-align:center; font-size: 12.5px; color: var(--grey); }
+  .history-row .status-tag{ justify-self:center; }
+  .history-row .link-btn{ justify-self:center; }
+  .history-head-row{ display:grid; grid-template-columns: 1fr 100px 90px 160px 90px; gap: 12px; padding: 0 18px; margin-bottom: 8px; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--grey); }
+  .history-head-row span:first-child{ text-align:left; }
+  .history-head-row span:not(:first-child){ text-align:center; }
+  .view-all{ text-align:center; margin-top: 6px; }
+
+  @media (max-width: 600px){
+    .history-head-row{ display:none; }
+    .history-row{ grid-template-columns: 1fr; height:auto; padding:16px 18px; row-gap:10px; align-items:start; }
+    .history-amt, .history-date{ text-align:left; justify-self:start; }
+    .history-amt::before{ content:"Amount"; display:block; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:var(--grey); margin-bottom:2px; }
+    .history-date::before{ content:"Date"; display:block; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:var(--grey); margin-bottom:2px; }
+    .history-row .status-tag{ justify-self:start; width:auto; }
+    .history-row .link-btn{ justify-self:start; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="demo-toggle">
+    <span>Mockup preview state:</span>
+    <button class="demo-btn active" id="btn-healthy">Healthy Account</button>
+    <button class="demo-btn" id="btn-action">Action Needed</button>
+  </div>
+
+  <a class="back" href="#">&larr; Back to dashboard</a>
+  <h1>Payments</h1>
+
+  <div class="summary-row">
+    <div class="summary-card zero" id="summary-due">
+      <div class="label">Amount Due</div>
+      <div class="value">$0.00</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Upcoming</div>
+      <div class="value">$800.00</div>
+    </div>
+  </div>
+
+  <!-- ACTION REQUIRED (exception state, hidden when healthy) -->
+  <div class="section" id="section-action" style="display:none;">
+    <div class="section-title">Action Required</div>
+    <div class="action-card">
+      <div class="obl-name">Emma Johnson</div>
+      <div class="obl-sub">Matilda JR. &middot; Production Tuition</div>
+      <div class="action-amt-row">
+        <div class="action-amt">$425.00</div>
+        <span class="status-tag overdue">Overdue</span>
+      </div>
+      <div class="fail-reason">
+        <span class="fail-date">Payment failed September 17, 2026</span>
+        The payment method assigned to this charge is no longer valid.
+      </div>
+      <button class="btn">Update Payment Method &amp; Pay</button>
+    </div>
+  </div>
+
+  <!-- Action Required section proceeds directly into Upcoming Charges when there is nothing to show -->
+
+  <!-- UPCOMING CHARGES -->
+  <div class="section">
+    <div class="section-title">Upcoming Charges</div>
+
+    <div class="obligation-card">
+      <div class="obl-name">Jack Smith</div>
+      <div class="obl-sub">Shrek: The Musical &middot; Production Tuition</div>
+      <div class="amt-breakdown">
+        <div class="amt-line"><span>Tuition</span><span>$450.00</span></div>
+        <div class="amt-line discount"><span>Discount</span><span>-$100.00</span></div>
+        <div class="amt-line scheduled"><span>Scheduled Amount</span><span>$350.00</span></div>
+      </div>
+      <div class="charge-meta">
+        <span>Scheduled for September 21, 2026</span>
+        <span class="payment-method">Visa &bull;&bull;&bull;&bull; 4242</span>
+      </div>
+      <div class="obligation-actions">
+        <button class="link-btn" onclick="toggle('jack-method')">Change Payment Method</button>
+        <button class="link-btn" onclick="toggle('jack-discount')">Apply Discount Code</button>
+      </div>
+      <div class="change-method-panel" id="jack-method">
+        <select>
+          <option>Visa &bull;&bull;&bull;&bull; 4242 (current)</option>
+          <option>Mastercard &bull;&bull;&bull;&bull; 5678</option>
+          <option>+ Add a new card</option>
+        </select>
+        <button class="btn">Confirm New Payment Method</button>
+      </div>
+      <div class="discount-panel" id="jack-discount">
+        <input type="text" placeholder="Enter discount code">
+        <button class="btn secondary">Apply</button>
+      </div>
+    </div>
+
+    <div class="obligation-card">
+      <div class="obl-name">Jill Smith</div>
+      <div class="obl-sub">Shrek: The Musical &middot; Production Tuition</div>
+      <div class="amt-breakdown">
+        <div class="amt-line"><span>Tuition</span><span>$450.00</span></div>
+        <div class="amt-line-spacer"></div>
+        <div class="amt-line scheduled"><span>Scheduled Amount</span><span>$450.00</span></div>
+      </div>
+      <div class="charge-meta">
+        <span>Scheduled for September 21, 2026</span>
+        <span class="payment-method">Mastercard &bull;&bull;&bull;&bull; 5678</span>
+      </div>
+      <div class="obligation-actions">
+        <button class="link-btn" onclick="toggle('jill-method')">Change Payment Method</button>
+        <button class="link-btn" onclick="toggle('jill-discount')">Apply Discount Code</button>
+      </div>
+      <div class="change-method-panel" id="jill-method">
+        <select>
+          <option>Mastercard &bull;&bull;&bull;&bull; 5678 (current)</option>
+          <option>Visa &bull;&bull;&bull;&bull; 4242</option>
+          <option>+ Add a new card</option>
+        </select>
+        <button class="btn">Confirm New Payment Method</button>
+      </div>
+      <div class="discount-panel" id="jill-discount">
+        <input type="text" placeholder="Enter discount code">
+        <button class="btn secondary">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT METHODS -->
+  <div class="section">
+    <div class="section-title">Payment Methods</div>
+    <div class="card-row">
+      <div class="card-info"><span class="card-brand">Visa</span> &bull;&bull;&bull;&bull; 4242 &nbsp; &middot; &nbsp; Expires 04/28</div>
+      <button class="link-btn">Remove</button>
+    </div>
+    <div class="card-row">
+      <div class="card-info"><span class="card-brand">Mastercard</span> &bull;&bull;&bull;&bull; 5678 &nbsp; &middot; &nbsp; Expires 11/27</div>
+      <button class="link-btn">Remove</button>
+    </div>
+    <button class="btn secondary">+ Add Card</button>
+  </div>
+
+  <!-- PAYMENT HISTORY -->
+  <div class="section">
+    <div class="section-title">Payment History</div>
+
+    <div class="history-head-row">
+      <span>Student / Program</span><span>Amount</span><span>Date</span><span>Status</span><span>View</span>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Vivian Andermen</div><div class="h-program">Little Shop of Horrors &middot; Production Tuition</div></div>
+      <span class="history-amt">$0.00</span>
+      <span class="history-date">09/13/26</span>
+      <span class="status-tag no-due">No Payment Due</span>
+      <button class="link-btn">View Receipt</button>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Cohen Andermen</div><div class="h-program">Beetlejuice JR. &middot; Production Tuition</div></div>
+      <span class="history-amt">$495.00</span>
+      <span class="history-date">09/13/26</span>
+      <span class="status-tag paid">Paid</span>
+      <button class="link-btn">View Receipt</button>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Jack Smith</div><div class="h-program">Fall Acting Intensive &middot; Class Tuition</div></div>
+      <span class="history-amt">$350.00</span>
+      <span class="history-date">09/05/26</span>
+      <span class="status-tag partial-refund">Partially Refunded</span>
+      <button class="link-btn">View Receipt</button>
+    </div>
+
+    <div class="history-row">
+      <div class="history-desc"><div class="h-student">Jack Smith</div><div class="h-program">Stripe Test Spring Musical &middot; Production Tuition</div></div>
+      <span class="history-amt">$0.00</span>
+      <span class="history-date">09/03/26</span>
+      <span class="status-tag refunded">Refunded</span>
+      <button class="link-btn">View Receipt</button>
+    </div>
+
+    <div class="view-all">
+      <button class="link-btn">View All Payment History &rarr;</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggle(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+const btnHealthy = document.getElementById('btn-healthy');
+const btnAction = document.getElementById('btn-action');
+const sectionAction = document.getElementById('section-action');
+const summaryDue = document.getElementById('summary-due');
+
+function setState(healthy){
+  btnHealthy.classList.toggle('active', healthy);
+  btnAction.classList.toggle('active', !healthy);
+  sectionAction.style.display = healthy ? 'none' : 'block';
+  if(healthy){
+    summaryDue.classList.add('zero');
+    summaryDue.classList.remove('due');
+    summaryDue.querySelector('.value').textContent = '$0.00';
+  } else {
+    summaryDue.classList.remove('zero');
+    summaryDue.classList.add('due');
+    summaryDue.querySelector('.value').textContent = '$425.00';
+  }
+}
+
+btnHealthy.addEventListener('click', () => setState(true));
+btnAction.addEventListener('click', () => setState(false));
+</script>
+</body>
+</html>
