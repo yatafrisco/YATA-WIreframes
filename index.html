@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YATA - Private Lesson Booking</title>
+<style>
+  :root{
+    --bg: #0b0b0c;
+    --panel: #131315;
+    --line: #3a352c;
+    --line-soft: #29261f;
+    --cream: #f2ead9;
+    --cream-dim: #cfc7b3;
+    --grey: #948f83;
+    --green: #7fae8e;
+    --amber: #d1a85e;
+    --rose: #c98b7a;
+  }
+  * { box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--cream-dim); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 40px 32px 90px; }
+  .wrap{ max-width: 660px; margin: 0 auto; }
+
+  .dev-bar{ border: 1px dashed var(--line); padding: 12px 14px; margin-bottom: 30px; }
+  .dev-bar .dev-label{ font-size: 10.5px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .dev-bar .dev-buttons{ display:flex; flex-wrap: wrap; gap: 6px; }
+  .dev-btn{ background:none; border: 1px solid var(--line); color: var(--cream-dim); padding: 5px 10px; font-size: 11px; cursor: pointer; }
+  .dev-btn.active{ border-color: var(--amber); color: var(--amber); }
+  .dev-note{ font-size: 11px; color: var(--grey); margin: 0 0 26px; }
+
+  .back{ color: var(--cream-dim); text-decoration: none; font-size: 14px; display:inline-block; margin-bottom: 20px; opacity: 0.8; }
+  h1{ font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 32px; color: var(--cream); margin: 0 0 4px; }
+  .page-sub{ font-size: 13.5px; color: var(--grey); margin-bottom: 22px; }
+
+  .section-title{ font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); margin: 26px 0 14px; }
+  .card{ border: 1px solid var(--line); padding: 20px 22px; margin-bottom: 12px; }
+
+  .field{ margin-bottom: 16px; }
+  .field label{ display:block; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--grey); margin-bottom: 6px; }
+  .field select, .field input{ width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 10px 12px; font-size: 14px; font-family: inherit; }
+  .field-row{ display:flex; gap: 12px; }
+  .field-row .field{ flex:1; }
+
+  /* Availability filters */
+  .filter-bar{ display:flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+  .filter-field{ display:flex; flex-direction: column; gap: 5px; }
+  .filter-field label{ font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); }
+  .filter-field select, .filter-field input{ background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 8px 10px; font-size: 13px; min-width: 140px; }
+  .btn-apply{ background: none; border: 1px solid var(--amber); color: var(--amber); padding: 8px 16px; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; height: 36px; }
+  .btn-apply:hover{ background: rgba(209,168,94,0.08); }
+
+  /* Compact occurrence picker */
+  .occurrence-row{ display:grid; grid-template-columns: 1fr auto; gap: 10px; align-items:center; border: 1px solid var(--line); padding: 12px 16px; margin-bottom: 8px; cursor: pointer; }
+  .occurrence-row.selected{ border-color: var(--amber); background: rgba(209,168,94,0.05); }
+  .occurrence-main{ font-size: 14px; color: var(--cream); }
+  .occurrence-main .o-type{ color: var(--amber); font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase; display:block; margin-bottom: 3px; }
+  .occurrence-meta{ font-size: 12px; color: var(--grey); margin-top: 3px; }
+  .occurrence-fee{ font-family: Georgia, serif; font-size: 16px; color: var(--cream); white-space: nowrap; text-align:right; }
+  .no-results{ padding: 20px 16px; text-align:center; color: var(--grey); font-size: 13px; border: 1px solid var(--line-soft); }
+
+  .lesson-summary{ margin-bottom: 6px; }
+  .lesson-summary-line{ display:flex; justify-content: space-between; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .lesson-summary-line:last-of-type{ border-bottom: none; }
+  .lesson-summary-line .k{ color: var(--grey); }
+  .lesson-summary-line .v{ color: var(--cream-dim); }
+
+  .method-row{ display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
+  .method-row select{ flex:1; }
+  .link-btn{ background:none; border:none; color: var(--amber); font-size: 13px; cursor: pointer; padding: 0; text-decoration: underline; white-space: nowrap; }
+
+  .card-entry-box{ border: 1px solid var(--line-soft); padding: 16px 18px; margin-bottom: 10px; background: rgba(255,255,255,0.015); }
+  .card-entry-title{ font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); margin-bottom: 12px; }
+  .card-error-msg{ display:none; border: 1px solid var(--rose); color: var(--rose); font-size: 13px; padding: 10px 12px; margin-top: 4px; margin-bottom: 12px; }
+  .card-error-msg.show{ display:block; }
+
+  .quickfill{ margin-top: 10px; padding: 8px 10px; border: 1px dashed var(--line); }
+  .quickfill .qf-label{ font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--grey); margin-bottom: 6px; }
+  .qf-buttons{ display:flex; flex-wrap:wrap; gap: 6px; }
+  .qf-btn{ background:none; border: 1px solid var(--line-soft); color: var(--grey); padding: 4px 9px; font-size: 10.5px; cursor: pointer; }
+  .qf-btn.active{ border-color: var(--amber); color: var(--amber); }
+
+  .auth-amount{ font-family: Georgia, serif; font-size: 26px; color: var(--cream); margin-bottom: 4px; }
+  .auth-date{ font-size: 13.5px; color: var(--cream-dim); margin-bottom: 14px; }
+  .auth-copy{ font-size: 13px; color: var(--grey); line-height: 1.6; margin-bottom: 16px; }
+  .auth-check{ display:flex; align-items:flex-start; gap: 10px; margin-bottom: 20px; font-size: 13.5px; color: var(--cream-dim); }
+  .auth-check input{ margin-top: 3px; flex-shrink:0; }
+
+  .btn{ background: none; border: 1px solid var(--amber); color: var(--amber); padding: 12px 22px; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; width: 100%; }
+  .btn:hover{ background: rgba(209,168,94,0.08); }
+  .btn:disabled{ opacity: 0.4; cursor: default; }
+  .btn.secondary{ border-color: var(--line); color: var(--cream-dim); width: auto; padding: 10px 18px; }
+
+  .processing-box{ text-align:center; padding: 30px 0; }
+  .spinner{ width: 30px; height: 30px; border: 3px solid var(--line); border-top-color: var(--amber); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.9s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .success-badge{ text-align:center; margin: 10px 0 20px; }
+  .success-badge .checkmark{ width: 50px; height:50px; border: 2px solid var(--green); border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 14px; color: var(--green); font-size: 24px; }
+  .success-title{ text-align:center; font-family: Georgia, serif; font-size: 21px; letter-spacing: 0.02em; color: var(--green); text-transform: uppercase; margin-bottom: 22px; }
+  .success-card{ border: 1px solid var(--line); padding: 22px 24px; margin-bottom: 20px; }
+  .success-name{ font-family: Georgia, serif; font-size: 19px; color: var(--cream); margin-bottom: 2px; }
+  .success-sub{ font-size: 13px; color: var(--grey); margin-bottom: 16px; }
+  .success-line{ display:flex; justify-content: space-between; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .success-line:last-of-type{ border-bottom:none; }
+  .success-line .k{ color: var(--grey); }
+  .success-line .v{ color: var(--cream-dim); }
+  .success-line.amt .v{ font-family: Georgia, serif; font-size: 17px; color: var(--cream); }
+  .no-charge-note{ font-size: 12.5px; color: var(--grey); text-align:center; margin-top: 4px; }
+
+  .action-stack{ display:flex; flex-direction:column; gap: 10px; margin-top: 20px; }
+
+  .empty-note{ border: 1px solid var(--line-soft); padding: 22px 20px; color: var(--grey); font-size: 13.5px; text-align:center; margin-bottom: 8px; }
+  .empty-note.warn{ border-color: var(--rose); color: var(--rose); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="dev-bar">
+    <div class="dev-label">Interaction-state preview (dev only, not part of the UI)</div>
+    <div class="dev-buttons">
+      <button class="dev-btn active" data-screen="A">A. Available Lesson + Saved Card</button>
+      <button class="dev-btn" data-screen="B">B. New Parent, No Saved Card</button>
+      <button class="dev-btn" data-screen="C">C. Add New Card</button>
+      <button class="dev-btn" data-screen="D">D. Card Error</button>
+      <button class="dev-btn" data-screen="E">E. Processing</button>
+      <button class="dev-btn" data-screen="F">F. Booking Success</button>
+      <button class="dev-btn" data-screen="G">G. No Available Lessons</button>
+      <button class="dev-btn" data-screen="H">H. Lesson No Longer Available</button>
+    </div>
+  </div>
+  <div class="dev-note">Payment Method, Payment Authorization, card states, and processing/success mechanics are the same reusable component as the Class Registration wireframe - only the lesson-specific content above them differs.</div>
+
+  <a class="back" href="#">&larr; Back to Lessons</a>
+  <h1>Private Lessons</h1>
+  <div class="page-sub">Choose an available lesson time below.</div>
+
+  <div id="main-content"></div>
+
+</div>
+
+<script>
+// ===== DEMO DATA ONLY - not production business rules =====
+// One canonical list. Every screen state (initial load and every dev-jump) resets from
+// this same source, so there is exactly one place occurrence fields are defined.
+// chargeDateLabel is precomputed here (day after the lesson) so no code path can
+// reference an occurrence that is missing it.
+const defaultLessonOccurrences = [
+  { id:"occ1", offeringType:"Vocal Lessons", instructor:"Ms. Rivera", date:"October 12, 2026", dateSort:"2026-10-12", time:"7:00 PM", fee: 100.00, chargeDateLabel:"October 13, 2026" },
+  { id:"occ2", offeringType:"Vocal Lessons", instructor:"Ms. Rivera", date:"October 19, 2026", dateSort:"2026-10-19", time:"7:00 PM", fee: 100.00, chargeDateLabel:"October 20, 2026" },
+  { id:"occ3", offeringType:"Vocal Lessons", instructor:"Mr. Delgado", date:"October 26, 2026", dateSort:"2026-10-26", time:"7:00 PM", fee: 100.00, chargeDateLabel:"October 27, 2026" },
+  { id:"occ4", offeringType:"Acting Coaching", instructor:"Ms. Whitfield", date:"October 15, 2026", dateSort:"2026-10-15", time:"5:00 PM", fee: 60.00, chargeDateLabel:"October 16, 2026" }
+];
+// ===== END DEMO DATA =====
+
+const allActors = [
+  { id:"jackson", name:"Jackson Morris" },
+  { id:"morgan", name:"Morgan Morris" }
+];
+
+let lessonOccurrences = []; // the full available set for this parent (post-eligibility, pre-filter)
+let filteredOccurrences = []; // what's actually shown, after Offering Type / From / To + Apply
+let selectedOccurrenceId = null;
+let currentActorId = "jackson";
+let hasSavedCard = true;
+let savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"];
+let selectedCardIndex = 0;
+let addCardMode = false;
+let cardErrorMessage = null;
+let devCardOutcome = "success";
+let devForceUnavailableOnSubmit = false;
+let lastBooking = null;
+
+function fmt(n){ return "$" + n.toFixed(2); }
+function findOccurrence(id){ return filteredOccurrences.find(o => o.id === id) || lessonOccurrences.find(o => o.id === id); }
+// Internal processing rule: the actual charge runs at 6:00 PM Central on this date.
+// That processing time is not shown in parent-facing UI - only the date is.
+function computeChargeDateLabel(occ){ return occ.chargeDateLabel; }
+
+function resetOccurrences(){
+  lessonOccurrences = defaultLessonOccurrences.map(o => Object.assign({}, o));
+  filteredOccurrences = lessonOccurrences.slice();
+  selectedOccurrenceId = filteredOccurrences.length ? filteredOccurrences[0].id : null;
+}
+
+function applyFilters(){
+  const type = document.getElementById("f-offering-type").value;
+  const fromVal = document.getElementById("f-from").value;
+  const toVal = document.getElementById("f-to").value;
+  const fromDate = fromVal ? new Date(fromVal) : null;
+  const toDate = toVal ? new Date(toVal) : null;
+
+  filteredOccurrences = lessonOccurrences.filter(o => {
+    if(type !== "All Offering Types" && o.offeringType !== type) return false;
+    const d = new Date(o.dateSort);
+    if(fromDate && d < fromDate) return false;
+    if(toDate && d > toDate) return false;
+    return true;
+  });
+
+  if(!filteredOccurrences.find(o => o.id === selectedOccurrenceId)){
+    selectedOccurrenceId = filteredOccurrences.length ? filteredOccurrences[0].id : null;
+  }
+  renderMain();
+}
+
+function renderMain(){
+  const container = document.getElementById("main-content");
+  const offeringTypes = [...new Set(lessonOccurrences.map(o => o.offeringType))];
+
+  const filterBarHtml = `
+    <div class="section-title">Available Lessons</div>
+    <div class="filter-bar">
+      <div class="filter-field">
+        <label>Offering Type</label>
+        <select id="f-offering-type">
+          <option>All Offering Types</option>
+          ${offeringTypes.map(t => `<option${t === currentFilterType ? " selected" : ""}>${t}</option>`).join("")}
+        </select>
+      </div>
+      <div class="filter-field">
+        <label>From</label>
+        <input type="date" id="f-from" value="${currentFilterFrom}">
+      </div>
+      <div class="filter-field">
+        <label>To</label>
+        <input type="date" id="f-to" value="${currentFilterTo}">
+      </div>
+      <button class="btn-apply" onclick="onApplyClick()">Apply</button>
+    </div>
+  `;
+
+  if(lessonOccurrences.length === 0){
+    container.innerHTML = filterBarHtml + `<div class="empty-note">There are no available lesson times to book right now. Check back soon, or contact YATA staff to be notified when new times open up.</div>`;
+    return;
+  }
+
+  const occurrenceListHtml = filteredOccurrences.length === 0
+    ? `<div class="no-results">No lesson times match these filters.</div>`
+    : filteredOccurrences.map(o => `
+        <div class="occurrence-row ${o.id === selectedOccurrenceId ? 'selected' : ''}" onclick="selectOccurrence('${o.id}')">
+          <div class="occurrence-main">
+            <span class="o-type">${o.offeringType}</span>
+            ${o.instructor} &middot; ${o.date}
+            <div class="occurrence-meta">${o.time}</div>
+          </div>
+          <div class="occurrence-fee">${fmt(o.fee)}</div>
+        </div>
+      `).join("");
+
+  if(filteredOccurrences.length === 0){
+    container.innerHTML = filterBarHtml + `<div class="card">${occurrenceListHtml}</div>`;
+    return;
+  }
+
+  const occ = findOccurrence(selectedOccurrenceId);
+
+  const actorOptions = allActors.map(a => `<option value="${a.id}"${a.id === currentActorId ? " selected" : ""}>${a.name}</option>`).join("");
+
+  let paymentMethodHtml = "";
+  if(!hasSavedCard || addCardMode){
+    paymentMethodHtml = `
+      <div class="card-entry-box">
+        <div class="card-entry-title">${hasSavedCard ? "Add New Card" : "Add a Credit Card"}</div>
+        ${cardFieldsHtml()}
+        ${cardErrorHtml()}
+        ${devCardOutcomeQuickfill()}
+        ${addCardMode ? `<button class="link-btn" style="margin-top:12px;" onclick="cancelAddCard()">Cancel &mdash; Use a Saved Card</button>` : ``}
+      </div>
+    `;
+  } else {
+    const cardOptions = savedCards.map((c,i) => `<option value="${i}"${i === selectedCardIndex ? " selected" : ""}>${c}</option>`).join("");
+    paymentMethodHtml = `
+      <div class="method-row">
+        <select onchange="selectedCardIndex = parseInt(this.value)">${cardOptions}</select>
+      </div>
+      <button class="link-btn" onclick="openAddCard()">+ Add New Card</button>
+    `;
+  }
+
+  const chargeDateLabel = computeChargeDateLabel(occ);
+
+  container.innerHTML = `
+    ${filterBarHtml}
+    <div class="card">
+      ${occurrenceListHtml}
+    </div>
+
+    <div class="section-title">Lesson Details</div>
+    <div class="card">
+      <div class="lesson-summary">
+        <div class="lesson-summary-line"><span class="k">Offering</span><span class="v">${occ.offeringType}</span></div>
+        <div class="lesson-summary-line"><span class="k">Instructor</span><span class="v">${occ.instructor}</span></div>
+        <div class="lesson-summary-line"><span class="k">Date</span><span class="v">${occ.date}</span></div>
+        <div class="lesson-summary-line"><span class="k">Time</span><span class="v">${occ.time}</span></div>
+        <div class="lesson-summary-line"><span class="k">Lesson Fee</span><span class="v">${fmt(occ.fee)}</span></div>
+      </div>
+      <div class="field" style="margin-top:16px; margin-bottom:0;">
+        <label>Select Actor</label>
+        <select onchange="currentActorId = this.value;">${actorOptions}</select>
+      </div>
+    </div>
+
+    <div class="section-title">Payment Method</div>
+    <div class="card">
+      ${paymentMethodHtml}
+    </div>
+
+    <div class="section-title">Payment Authorization</div>
+    <div class="card">
+      <div class="auth-amount">${fmt(occ.fee)}</div>
+      <div class="auth-date">Scheduled charge: ${chargeDateLabel}</div>
+      <div class="auth-copy">
+        Your card will not be charged today. By completing this booking, you authorize Young Actors Theater Academy LLC to charge ${fmt(occ.fee)} to the payment method selected above on ${chargeDateLabel}.
+      </div>
+      <label class="auth-check">
+        <input type="checkbox" id="auth-checkbox" onchange="onAuthCheckChange()">
+        I authorize this future charge.
+      </label>
+      <button class="btn" id="book-btn" onclick="submitBooking()" disabled>Book This Lesson</button>
+    </div>
+  `;
+}
+
+let currentFilterType = "All Offering Types";
+let currentFilterFrom = "";
+let currentFilterTo = "";
+
+function onApplyClick(){
+  currentFilterType = document.getElementById("f-offering-type").value;
+  currentFilterFrom = document.getElementById("f-from").value;
+  currentFilterTo = document.getElementById("f-to").value;
+  applyFilters();
+}
+
+function selectOccurrence(id){
+  selectedOccurrenceId = id;
+  renderMain();
+}
+
+function cardFieldsHtml(){
+  return `
+    <div class="field">
+      <label>Name on Card</label>
+      <input type="text" placeholder="Parent Name">
+    </div>
+    <div class="field">
+      <label>Card Number</label>
+      <input type="text" placeholder="1234 1234 1234 1234">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Expiration</label>
+        <input type="text" placeholder="MM / YY">
+      </div>
+      <div class="field">
+        <label>CVC</label>
+        <input type="text" placeholder="CVC">
+      </div>
+    </div>
+  `;
+}
+
+function cardErrorHtml(){
+  if(!cardErrorMessage) return "";
+  return `<div class="card-error-msg show">${cardErrorMessage}</div>`;
+}
+
+function devCardOutcomeQuickfill(){
+  return `
+    <div class="quickfill">
+      <div class="qf-label">Dev: card validation outcome</div>
+      <div class="qf-buttons">
+        <button type="button" class="qf-btn ${devCardOutcome === 'success' ? 'active' : ''}" onclick="setDevCardOutcome('success')">Valid card</button>
+        <button type="button" class="qf-btn ${devCardOutcome === 'declined' ? 'active' : ''}" onclick="setDevCardOutcome('declined')">Card declined</button>
+      </div>
+    </div>
+  `;
+}
+
+function setDevCardOutcome(outcome){
+  devCardOutcome = outcome;
+  renderMain();
+}
+
+function onAuthCheckChange(){
+  document.getElementById("book-btn").disabled = !document.getElementById("auth-checkbox").checked;
+}
+
+function openAddCard(){
+  addCardMode = true;
+  cardErrorMessage = null;
+  renderMain();
+}
+
+function cancelAddCard(){
+  addCardMode = false;
+  cardErrorMessage = null;
+  renderMain();
+}
+
+function submitBooking(){
+  if(!hasSavedCard || addCardMode){
+    if(devCardOutcome === "declined"){
+      cardErrorMessage = "We couldn't verify this card. Please check the details and try again, or use a different card.";
+      renderMain();
+      return;
+    }
+    if(!hasSavedCard){
+      savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"];
+      selectedCardIndex = 0;
+    } else if(addCardMode){
+      savedCards.push("Visa &bull;&bull;&bull;&bull; 9012");
+      selectedCardIndex = savedCards.length - 1;
+    }
+    hasSavedCard = true;
+    addCardMode = false;
+    cardErrorMessage = null;
+  }
+
+  const occ = findOccurrence(selectedOccurrenceId);
+  const actor = allActors.find(a => a.id === currentActorId);
+  const cardLabel = savedCards[selectedCardIndex];
+  const chargeDateLabel = computeChargeDateLabel(occ);
+
+  document.getElementById("main-content").innerHTML = `
+    <div class="processing-box">
+      <div class="spinner"></div>
+      <div>Booking&hellip;</div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    if(devForceUnavailableOnSubmit){
+      lessonOccurrences = lessonOccurrences.filter(o => o.id !== occ.id);
+      filteredOccurrences = filteredOccurrences.filter(o => o.id !== occ.id);
+      renderLessonUnavailable();
+      return;
+    }
+    lastBooking = { actor, occ, cardLabel, chargeDateLabel };
+    lessonOccurrences = lessonOccurrences.filter(o => o.id !== occ.id);
+    filteredOccurrences = filteredOccurrences.filter(o => o.id !== occ.id);
+    renderSuccess();
+  }, 1200);
+}
+
+function renderSuccess(){
+  const container = document.getElementById("main-content");
+  const { actor, occ, cardLabel, chargeDateLabel } = lastBooking;
+
+  container.innerHTML = `
+    <div class="success-badge"><div class="checkmark">&#10003;</div></div>
+    <div class="success-title">Lesson Booked</div>
+
+    <div class="success-card">
+      <div class="success-name">${actor.name}</div>
+      <div class="success-sub">${occ.offeringType} with ${occ.instructor}</div>
+      <div class="success-line"><span class="k">Date</span><span class="v">${occ.date}</span></div>
+      <div class="success-line"><span class="k">Time</span><span class="v">${occ.time}</span></div>
+      <div class="section-title" style="margin-top:16px;">Payment Authorization</div>
+      <div class="success-line amt"><span class="k">Amount</span><span class="v">${fmt(occ.fee)}</span></div>
+      <div class="success-line"><span class="k">Payment Method</span><span class="v">${cardLabel}</span></div>
+      <div class="success-line"><span class="k">Scheduled</span><span class="v">${chargeDateLabel}</span></div>
+    </div>
+    <div class="no-charge-note">No payment was charged today.</div>
+
+    <div class="action-stack">
+      <button class="btn">View My Lessons</button>
+      ${lessonOccurrences.length > 0 ? `<button class="btn secondary" onclick="resetToAvailable()">Book Another Lesson</button>` : ``}
+    </div>
+  `;
+}
+
+function renderLessonUnavailable(){
+  const container = document.getElementById("main-content");
+  container.innerHTML = `
+    <div class="empty-note warn">This lesson time was just booked by another family and is no longer available. Nothing was charged.</div>
+    <div class="action-stack">
+      <button class="btn secondary" onclick="resetToAvailable()">Choose a Different Time</button>
+    </div>
+  `;
+}
+
+function resetToAvailable(){
+  addCardMode = false;
+  cardErrorMessage = null;
+  hasSavedCard = true;
+  savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"];
+  selectedCardIndex = 0;
+  selectedOccurrenceId = filteredOccurrences.length ? filteredOccurrences[0].id : null;
+  renderMain();
+}
+
+// ---------- Dev bar direct-jump controls ----------
+function goToDevScreen(letter){
+  document.querySelectorAll(".dev-btn").forEach(b => b.classList.toggle("active", b.dataset.screen === letter));
+  devForceUnavailableOnSubmit = false;
+  currentFilterType = "All Offering Types";
+  currentFilterFrom = "";
+  currentFilterTo = "";
+  resetOccurrences();
+  currentActorId = "jackson";
+
+  if(letter === "A"){
+    hasSavedCard = true; savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"]; selectedCardIndex = 0;
+    addCardMode = false; cardErrorMessage = null; devCardOutcome = "success";
+    renderMain();
+  } else if(letter === "B"){
+    hasSavedCard = false; savedCards = []; selectedCardIndex = 0;
+    addCardMode = false; cardErrorMessage = null; devCardOutcome = "success";
+    renderMain();
+  } else if(letter === "C"){
+    hasSavedCard = true; savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"]; selectedCardIndex = 0;
+    addCardMode = true; cardErrorMessage = null; devCardOutcome = "success";
+    renderMain();
+  } else if(letter === "D"){
+    hasSavedCard = false; savedCards = []; selectedCardIndex = 0;
+    addCardMode = false; devCardOutcome = "declined";
+    cardErrorMessage = "We couldn't verify this card. Please check the details and try again, or use a different card.";
+    renderMain();
+  } else if(letter === "E"){
+    document.getElementById("main-content").innerHTML = `
+      <div class="processing-box">
+        <div class="spinner"></div>
+        <div>Booking&hellip;</div>
+      </div>
+    `;
+  } else if(letter === "F"){
+    hasSavedCard = true; savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"]; selectedCardIndex = 0;
+    const occ = defaultLessonOccurrences[0];
+    lastBooking = {
+      actor: allActors.find(a => a.id === "jackson"),
+      occ: occ,
+      cardLabel: "Visa &bull;&bull;&bull;&bull; 4242",
+      chargeDateLabel: computeChargeDateLabel(occ)
+    };
+    lessonOccurrences = lessonOccurrences.filter(o => o.id !== occ.id);
+    filteredOccurrences = filteredOccurrences.filter(o => o.id !== occ.id);
+    renderSuccess();
+  } else if(letter === "G"){
+    lessonOccurrences = [];
+    filteredOccurrences = [];
+    renderMain();
+  } else if(letter === "H"){
+    hasSavedCard = true; savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"]; selectedCardIndex = 0;
+    addCardMode = false; cardErrorMessage = null; devCardOutcome = "success";
+    devForceUnavailableOnSubmit = true;
+    renderMain();
+  }
+}
+
+document.querySelectorAll(".dev-btn").forEach(btn => {
+  btn.addEventListener("click", () => goToDevScreen(btn.dataset.screen));
+});
+
+goToDevScreen("A");
+</script>
+</body>
+</html>
