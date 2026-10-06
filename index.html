@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YATA - Class Detail &amp; Registration</title>
+<style>
+  :root{
+    --bg: #0b0b0c;
+    --panel: #131315;
+    --line: #3a352c;
+    --line-soft: #29261f;
+    --cream: #f2ead9;
+    --cream-dim: #cfc7b3;
+    --grey: #948f83;
+    --green: #7fae8e;
+    --amber: #d1a85e;
+    --rose: #c98b7a;
+  }
+  * { box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--cream-dim); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 40px 32px 90px; }
+  .wrap{ max-width: 640px; margin: 0 auto; }
+
+  /* Demo Controls: small, visually separate, not part of the parent experience */
+  .demo-controls{ border: 1px dashed var(--line); padding: 12px 14px; margin-top: 56px; }
+  .demo-title{ font-size: 10.5px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .demo-title span{ text-transform: none; letter-spacing: 0; }
+  .demo-row{ display:flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; }
+  .demo-row + .demo-row{ margin-top: 10px; }
+  .demo-field{ display:flex; flex-direction: column; gap: 4px; }
+  .demo-field label{ font-size: 10px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.04em; }
+  .demo-field select{ background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 6px 8px; font-size: 12px; font-family: inherit; }
+  .demo-btn{ background: none; border: 1px solid var(--line); color: var(--cream-dim); padding: 7px 11px; font-size: 11px; cursor: pointer; }
+  .demo-btn:hover{ border-color: var(--amber); color: var(--amber); }
+  .demo-btn:disabled{ opacity: 0.35; cursor: default; border-color: var(--line); color: var(--cream-dim); }
+  .demo-nav{ border: 1px dashed var(--line); padding: 10px 12px; margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .demo-nav-tag{ font-size: 10px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.05em; }
+  .demo-nav-note{ font-size: 11px; color: var(--grey); }
+  .demo-status{ font-size: 11px; color: var(--grey); margin-top: 10px; }
+  .demo-status .ok{ color: var(--green); }
+  .demo-status .no{ color: var(--rose); }
+  .avail-notice{ border: 1px solid var(--rose); color: var(--rose); font-size: 13px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.5; }
+
+  .back{ color: var(--cream-dim); text-decoration: none; font-size: 14px; display:inline-block; margin-bottom: 20px; opacity: 0.8; }
+
+  /* ---------- Class Detail ---------- */
+  .class-graphic{ width: 100%; height: 200px; margin-bottom: 20px; background: linear-gradient(135deg, #23301f, #3a4a2c 45%, #57411f); border: 1px solid var(--line); display:flex; align-items:center; justify-content:center; }
+  .class-graphic .graphic-label{ font-family: Georgia, serif; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(242,234,217,0.55); }
+
+  h1{ font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: 32px; color: var(--cream); margin: 0 0 12px; }
+  .class-description{ font-size: 14px; line-height: 1.6; color: var(--cream-dim); margin-bottom: 18px; }
+
+  .class-meta{ display:flex; flex-wrap: wrap; gap: 8px 22px; margin-bottom: 18px; }
+  .class-meta-item{ font-size: 13px; color: var(--grey); }
+  .class-meta-item strong{ color: var(--cream-dim); font-weight: 500; }
+
+  .detail-divider{ border: none; border-top: 1px solid var(--line); margin: 30px 0 26px; }
+  .register-heading{ font-family: Georgia, serif; font-size: 20px; color: var(--cream); margin: 0 0 18px; }
+
+  /* ---------- Registration form (unchanged pattern) ---------- */
+  .section-title{ font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); margin: 26px 0 14px; }
+  .card{ border: 1px solid var(--line); padding: 20px 22px; margin-bottom: 12px; }
+
+  .field{ margin-bottom: 16px; }
+  .field label{ display:block; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--grey); margin-bottom: 6px; }
+  .field select, .field input{ width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 10px 12px; font-size: 14px; font-family: inherit; }
+  .field-row{ display:flex; gap: 12px; }
+  .field-row .field{ flex:1; }
+
+  .actor-links{ display:flex; gap: 16px; margin: -8px 0 16px; }
+  .actor-links .link-btn{ font-size: 12.5px; }
+  .actor-links .link-btn.muted{ color: var(--grey); text-decoration: none; }
+
+  .type-detail{ font-size: 13px; color: var(--grey); margin: -8px 0 16px; }
+
+  .method-row{ display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
+  .method-row select{ flex:1; background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 10px 12px; font-size: 14px; font-family: inherit; }
+  .link-btn{ background:none; border:none; color: var(--amber); font-size: 13px; cursor: pointer; padding: 0; text-decoration: underline; white-space: nowrap; }
+
+  .card-entry-box{ border: 1px solid var(--line-soft); padding: 16px 18px; margin-bottom: 10px; background: rgba(255,255,255,0.015); }
+  .card-entry-title{ font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); margin-bottom: 12px; }
+  .card-error-msg{ display:none; border: 1px solid var(--rose); color: var(--rose); font-size: 13px; padding: 10px 12px; margin-top: 4px; margin-bottom: 12px; }
+  .card-error-msg.show{ display:block; }
+
+  .auth-amount{ font-family: Georgia, serif; font-size: 26px; color: var(--cream); margin-bottom: 4px; }
+  .auth-date{ font-size: 13.5px; color: var(--cream-dim); margin-bottom: 14px; }
+  .auth-copy{ font-size: 13px; color: var(--grey); line-height: 1.6; margin-bottom: 16px; }
+  .auth-check{ display:flex; align-items:flex-start; gap: 10px; margin-bottom: 20px; font-size: 13.5px; color: var(--cream-dim); }
+  .auth-check input{ margin-top: 3px; flex-shrink:0; }
+
+  .btn{ background: none; border: 1px solid var(--amber); color: var(--amber); padding: 12px 22px; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; width: 100%; }
+  .btn:hover{ background: rgba(209,168,94,0.08); }
+  .btn:disabled{ opacity: 0.4; cursor: default; }
+  .btn.secondary{ border-color: var(--line); color: var(--cream-dim); width: auto; padding: 10px 18px; }
+
+  .processing-box{ text-align:center; padding: 30px 0; }
+  .spinner{ width: 30px; height: 30px; border: 3px solid var(--line); border-top-color: var(--amber); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.9s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .success-badge{ text-align:center; margin: 10px 0 20px; }
+  .success-badge .checkmark{ width: 50px; height:50px; border: 2px solid var(--green); border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 14px; color: var(--green); font-size: 24px; }
+  .success-title{ text-align:center; font-family: Georgia, serif; font-size: 21px; letter-spacing: 0.02em; color: var(--green); text-transform: uppercase; margin-bottom: 22px; }
+  .success-card{ border: 1px solid var(--line); padding: 22px 24px; margin-bottom: 20px; }
+  .success-name{ font-family: Georgia, serif; font-size: 19px; color: var(--cream); margin-bottom: 2px; }
+  .success-sub{ font-size: 13px; color: var(--grey); margin-bottom: 16px; }
+  .success-line{ display:flex; justify-content: space-between; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .success-line:last-of-type{ border-bottom:none; }
+  .success-line .k{ color: var(--grey); }
+  .success-line .v{ color: var(--cream-dim); }
+  .success-line.amt .v{ font-family: Georgia, serif; font-size: 17px; color: var(--cream); }
+  .no-charge-note{ font-size: 12.5px; color: var(--grey); text-align:center; margin-top: 4px; }
+
+  .action-stack{ display:flex; flex-direction:column; gap: 10px; margin-top: 20px; }
+
+  .roster-list{ margin-top: 8px; }
+  .roster-item{ font-size: 13.5px; color: var(--cream-dim); padding: 8px 0; border-bottom: 1px solid var(--line-soft); }
+  .roster-item:last-child{ border-bottom:none; }
+  .roster-item .r-type{ color: var(--grey); }
+
+  .empty-note{ border: 1px solid var(--line-soft); padding: 18px 20px; color: var(--grey); font-size: 13.5px; text-align:center; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="#">&larr; Back to Classes</a>
+
+  <div id="class-detail"></div>
+
+  <hr class="detail-divider">
+  <div class="register-heading">Register for this Class</div>
+
+  <div id="main-content"></div>
+
+  <div class="demo-controls" id="demo-controls"></div>
+
+</div>
+
+<script>
+const classInfo = {
+  title: "Shrek \u2013 Legacy of the Swamp Creatures",
+  description: "Head back to the swamp! In this high-energy showcase class, young performers explore favorite songs and scenes inspired by the world of Shrek, building confidence, character work, and ensemble performance skills in a supportive environment. No experience necessary \u2014 just bring your best ogre roar.",
+  meetingDays: "Wednesdays",
+  dateRange: "September 16 \u2013 November 4, 2026",
+  time: "4:00\u20134:30 PM",
+  fullSeriesEnabled: true,
+  fullSeriesFee: 125.00,
+  dropInEnabled: true,
+  dropInFee: 50.00
+};
+
+// Optional class graphic: set to true to show one in the Class Detail header. When false the area collapses completely.
+const hasGraphic = false;
+
+function renderClassDetail(){
+  const container = document.getElementById("class-detail");
+  const graphicHtml = hasGraphic
+    ? `<div class="class-graphic"><span class="graphic-label">${classInfo.title}</span></div>`
+    : "";
+
+  container.innerHTML = `
+    ${graphicHtml}
+    <h1>${classInfo.title}</h1>
+    <div class="class-description">${classInfo.description}</div>
+    <div class="class-meta">
+      <div class="class-meta-item"><strong>${classInfo.meetingDays}</strong></div>
+      <div class="class-meta-item"><strong>${classInfo.dateRange}</strong></div>
+      <div class="class-meta-item"><strong>${classInfo.time}</strong></div>
+    </div>
+  `;
+}
+
+const allActors = [
+  { id:"jackson", name:"Jackson Morris" },
+  { id:"morgan", name:"Morgan Morris" }
+];
+
+// ================= REGISTRATION AVAILABILITY (parent) =================
+// Every class session, in order, with its scheduled START time in Central time. Stable
+// indexes: the parent only ever SEES the sessions that are still open, but the selection
+// is remembered by its position in this full list so it cannot silently shift to another
+// date when earlier sessions close.
+//   - Full Series: open only until the scheduled start of the FIRST session.
+//   - Drop-In:     each session is open only until the scheduled start of THAT session.
+//   - All cutoffs are evaluated in Central time (America/Chicago). In production, compare
+//     real instants using the Central time zone rules (DST ends Nov 1, 2026, so the
+//     Nov 4 session starts at 4:00 PM CST while the others start at 4:00 PM CDT). This
+//     prototype uses a demo clock that is already a Central wall-clock time.
+//   - Eligibility is rechecked on submit (see submitRegistration).
+// Charge date is the day after the session, at 6:00 PM CT.
+const dropInSessions = [
+  { start: "2026-09-16T16:00", event: "September 16, 2026", charge: "September 17, 2026" },
+  { start: "2026-09-23T16:00", event: "September 23, 2026", charge: "September 24, 2026" },
+  { start: "2026-09-30T16:00", event: "September 30, 2026", charge: "October 1, 2026" },
+  { start: "2026-10-07T16:00", event: "October 7, 2026", charge: "October 8, 2026" },
+  { start: "2026-10-14T16:00", event: "October 14, 2026", charge: "October 15, 2026" },
+  { start: "2026-10-21T16:00", event: "October 21, 2026", charge: "October 22, 2026" },
+  { start: "2026-10-28T16:00", event: "October 28, 2026", charge: "October 29, 2026" },
+  { start: "2026-11-04T16:00", event: "November 4, 2026", charge: "November 5, 2026" }
+];
+
+// DEMO clock (Central wall-clock, "YYYY-MM-DDTHH:mm"). Not a business rule: it exists so the
+// cutoff behavior can be reviewed. Default is before the first session, which preserves the
+// original experience (Full Series and Drop-In both available).
+const DEMO_CLOCK_PRESETS = [
+  { label: "Before first class", value: "2026-09-09T09:00" },
+  { label: "First class day, 3:59 PM", value: "2026-09-16T15:59" },
+  { label: "First class started, 4:00 PM", value: "2026-09-16T16:00" },
+  { label: "Mid-series", value: "2026-10-14T17:00" },
+  { label: "Last class day, 3:59 PM", value: "2026-11-04T15:59" },
+  { label: "All closed", value: "2026-11-04T16:00" }
+];
+let demoNow = DEMO_CLOCK_PRESETS[0].value;
+
+// A cutoff is "until the scheduled start time": open while now is strictly before the start.
+function isFullSeriesOpen(){ return classInfo.fullSeriesEnabled && demoNow < dropInSessions[0].start; }
+function isSessionOpen(i){ return classInfo.dropInEnabled && demoNow < dropInSessions[i].start; }
+function eligibleSessionIndexes(){ return dropInSessions.map((s,i) => i).filter(i => isSessionOpen(i)); }
+function firstEligibleIndex(actorId = currentActorId){ const e = eligibleSessionIndexesFor(actorId); return e.length ? e[0] : 0; }
+function availableTypes(){
+  const t = [];
+  if(isFullSeriesOpen()) t.push("Full Series");
+  if(eligibleSessionIndexes().length) t.push("Drop-In");
+  return t;
+}
+// If no registration option remains, the class no longer appears in the parent-facing class list.
+function classHasOpenOptions(){ return availableTypes().length > 0; }
+
+// ----- Per-actor eligibility -----
+// An actor can hold several registrations: any number of Drop-Ins (one per session) OR one Full Series.
+// There is no Drop-In -> Full Series conversion: an actor with an active Drop-In is not offered Full
+// Series (even while it is still open) and registers for additional Drop-In sessions instead. Families
+// who want to switch contact YATA and staff handle it administratively. An actor who already has Full
+// Series is covered for every session, so no further options remain for that actor.
+function actorRegistrations(actorId){ return registrations.filter(r => r.actorId === actorId); }
+function actorHasDropIn(actorId){ return actorRegistrations(actorId).some(r => r.type === "Drop-In"); }
+function actorHasFullSeries(actorId){ return actorRegistrations(actorId).some(r => r.type === "Full Series"); }
+function fullSeriesAvailableFor(actorId){ return isFullSeriesOpen() && !actorHasDropIn(actorId) && !actorHasFullSeries(actorId); }
+// Open Drop-In sessions (cutoff rule) minus the sessions this actor is already registered for.
+function eligibleSessionIndexesFor(actorId){
+  if(actorHasFullSeries(actorId)) return [];
+  const taken = new Set(actorRegistrations(actorId).filter(r => r.type === "Drop-In").map(r => r.sessionEvent));
+  return eligibleSessionIndexes().filter(i => !taken.has(dropInSessions[i].event));
+}
+function availableTypesFor(actorId){
+  const t = [];
+  if(fullSeriesAvailableFor(actorId)) t.push("Full Series");
+  if(eligibleSessionIndexesFor(actorId).length) t.push("Drop-In");
+  return t;
+}
+// Is the current actor + type + date still a valid choice?
+function selectionAvailableForActor(){
+  if(!availableTypesFor(currentActorId).includes(registrationType)) return false;
+  if(registrationType === "Drop-In" && !eligibleSessionIndexesFor(currentActorId).includes(dropInSessionIndex)) return false;
+  return true;
+}
+
+let availabilityNotice = null;   // shown once above the form when an option closed under the parent
+let closedWhileOpen = false;     // class closed while the parent had the page open
+
+// Is the parent's CURRENT selection still open? Returns a message if not (does not change state).
+function selectionClosedNotice(){
+  if(registrationType === "Full Series" && !isFullSeriesOpen()){
+    return availableTypes().includes("Drop-In")
+      ? "Full Series registration closed when the first class began, so your registration was not submitted. You can still register for an available Drop-In date."
+      : "Registration for this class closed while you were on this page, so your registration was not submitted.";
+  }
+  if(registrationType === "Drop-In" && !isSessionOpen(dropInSessionIndex)){
+    return eligibleSessionIndexes().length
+      ? `Registration for ${dropInSessions[dropInSessionIndex].event} closed when that class began, so your registration was not submitted. Please choose another available date.`
+      : "Registration for this class closed while you were on this page, so your registration was not submitted.";
+  }
+  // Authoritative per-actor recheck on submit (for example, Full Series for an actor who already has a
+  // Drop-In, or a session this actor is already registered for, is rejected).
+  if(!selectionAvailableForActor()){
+    return "That option is no longer available for the selected actor, so your registration was not submitted. Please choose another available option.";
+  }
+  return null;
+}
+// Move the selection to the first option that is still open for the current actor (silent).
+function normalizeSelection(){
+  const types = availableTypesFor(currentActorId);
+  if(!types.length) return;
+  if(!types.includes(registrationType)) registrationType = types[0];
+  if(registrationType === "Drop-In" && !eligibleSessionIndexesFor(currentActorId).includes(dropInSessionIndex)) dropInSessionIndex = firstEligibleIndex();
+}
+
+// ================= DEMO STATE =================
+let registrations = []; // [{ actorId, type, amount, chargeDateLabel, sessionEvent, cardLabel }] - persists for the whole demo; an actor may hold several Drop-Ins
+let hasSavedCard = true;
+let savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"];
+let selectedCardIndex = 0;
+let addCardMode = false;
+let cardErrorMessage = null;
+let currentActorId = "jackson";
+let registrationType = "Full Series";
+let dropInSessionIndex = 0;
+let lastSuccessRec = null;
+let currentView = "form";        // "form" (form / closed / already registered) | "processing" | "success"
+let formShown = false;           // true only while the registration form itself is on screen
+let processingTimer = null;
+
+// Demo Controls (not part of the parent experience)
+let newCardResult = "valid";     // what happens when a NEW card is validated: "valid" | "declined"
+let accountMode = "saved";       // "saved" = existing parent with a saved card | "new" = new parent, no saved card
+
+function fmt(n){ return "$" + n.toFixed(2); }
+
+// Actors who still have at least one registration option (cutoffs + per-actor rules).
+function availableActors(){
+  return allActors.filter(a => availableTypesFor(a.id).length > 0);
+}
+
+function computeAmount(type){ return type === "Full Series" ? classInfo.fullSeriesFee : classInfo.dropInFee; }
+
+// Internal processing rule: the actual charge runs at 6:00 PM Central on this date.
+// That processing time is not shown in parent-facing UI - only the date is.
+function computeChargeDateLabel(type, sessionIdx){
+  return type === "Full Series" ? "September 17, 2026" : dropInSessions[sessionIdx].charge;
+}
+
+function computeSessionEvent(type, sessionIdx){
+  return type === "Drop-In" ? dropInSessions[sessionIdx].event : null;
+}
+
+function ensureValidActor(){
+  const avail = availableActors();
+  if(!avail.find(a => a.id === currentActorId)){
+    currentActorId = avail.length ? avail[0].id : null;
+    if(currentActorId) normalizeSelection();   // silently adapt to the new actor's options
+  }
+}
+
+// Changing the actor keeps any "your option closed" notice for the old selection, then adapts the
+// selection to what the new actor can register for.
+function onActorChange(actorId){
+  const notice = selectionClosedNotice();
+  currentActorId = actorId;
+  if(notice) availabilityNotice = notice;
+  normalizeSelection();
+  renderMain();
+}
+
+// Success screen -> form for a sibling who still has options.
+function registerAnotherActor(){
+  const justRegistered = lastSuccessRec ? lastSuccessRec.actorId : null;
+  const sibling = availableActors().find(a => a.id !== justRegistered);
+  if(sibling){
+    currentActorId = sibling.id;
+    registrationType = availableTypesFor(sibling.id)[0];
+    dropInSessionIndex = firstEligibleIndex(sibling.id);
+  }
+  renderMain();
+}
+
+
+// The list of everything registered so far in this demo (same component used on success and already-registered screens).
+function rosterBlockHtml(){
+  if(!registrations.length) return "";
+  const items = registrations.map(r => {
+    const a = allActors.find(x => x.id === r.actorId);
+    const sessionNote = r.sessionEvent ? ` &mdash; ${r.sessionEvent}` : "";
+    return `<div class="roster-item">${a.name} <span class="r-type">&mdash; ${r.type}${sessionNote}</span></div>`;
+  }).join("");
+  return `
+    <div class="section-title">Registered for this Class</div>
+    <div class="roster-list">${items}</div>
+  `;
+}
+
+function renderMain(){
+  currentView = "form";
+  formShown = false;
+  ensureValidActor();
+  const container = document.getElementById("main-content");
+  const avail = availableActors();
+
+  if(avail.length === 0){
+    // Nobody has an option left. If every actor already has a registration, show the already-registered
+    // state; otherwise the class itself is closed to parents.
+    if(allActors.every(a => actorRegistrations(a.id).length > 0)){
+      closedWhileOpen = false;
+      renderNobodyEligible(container);
+    } else {
+      renderClassClosed(container);
+    }
+    renderDemoControls();
+    return;
+  }
+
+  // If the selected option closed while this page was open, say so and move to an open option.
+  const staleNotice = selectionClosedNotice();
+  if(staleNotice){ availabilityNotice = staleNotice; normalizeSelection(); }
+  const noticeHtml = availabilityNotice ? `<div class="avail-notice">${availabilityNotice}</div>` : "";
+  availabilityNotice = null;
+
+  const amount = computeAmount(registrationType);
+  const chargeDateLabel = computeChargeDateLabel(registrationType, dropInSessionIndex);
+  const actorOptions = avail.map(a => `<option value="${a.id}"${a.id === currentActorId ? " selected" : ""}>${a.name}</option>`).join("");
+
+  let paymentMethodHtml = "";
+  if(!hasSavedCard || addCardMode){
+    paymentMethodHtml = `
+      <div class="card-entry-box">
+        <div class="card-entry-title">${hasSavedCard ? "Add New Card" : "Add a Credit Card"}</div>
+        ${cardFieldsHtml()}
+        ${cardErrorHtml()}
+        ${addCardMode ? `<button class="link-btn" style="margin-top:12px;" onclick="cancelAddCard()">Cancel &mdash; Use a Saved Card</button>` : ``}
+      </div>
+    `;
+  } else {
+    const cardOptions = savedCards.map((c,i) => `<option value="${i}"${i === selectedCardIndex ? " selected" : ""}>${c}</option>`).join("");
+    paymentMethodHtml = `
+      <div class="method-row">
+        <select id="card-select" onchange="selectedCardIndex = parseInt(this.value)">${cardOptions}</select>
+      </div>
+      <button class="link-btn" onclick="openAddCard()">+ Add New Card</button>
+    `;
+  }
+
+  const dropInSessionField = registrationType === "Drop-In" ? `
+    <div class="field">
+      <label>Select Class Date</label>
+      <select onchange="dropInSessionIndex = parseInt(this.value); renderMain();">
+        ${eligibleSessionIndexesFor(currentActorId).map(i => `<option value="${i}"${i === dropInSessionIndex ? " selected" : ""}>${dropInSessions[i].event}</option>`).join("")}
+      </select>
+    </div>` : "";
+
+  const typeOptions = availableTypesFor(currentActorId);
+
+  const typeDetail = registrationType === "Full Series"
+    ? `Full Series: ${fmt(classInfo.fullSeriesFee)} &middot; meets weekly through Nov 4`
+    : `Drop-In: ${fmt(classInfo.dropInFee)} per class`;
+
+  container.innerHTML = `
+    ${noticeHtml}
+    <div class="card">
+      <div class="field">
+        <label>Select Actor</label>
+        <select onchange="onActorChange(this.value)">${actorOptions}</select>
+      </div>
+      <div class="actor-links">
+        <button class="link-btn">+ Add an Actor</button>
+        <button class="link-btn muted">Manage Actors</button>
+      </div>
+      <div class="field">
+        <label>Registration Type</label>
+        <select onchange="registrationType = this.value; dropInSessionIndex = firstEligibleIndex(); renderMain();">
+          ${typeOptions.map(t => `<option${t === registrationType ? " selected" : ""}>${t}</option>`).join("")}
+        </select>
+      </div>
+      <div class="type-detail">${typeDetail}</div>
+      ${dropInSessionField}
+    </div>
+
+    <div class="section-title">Payment Method</div>
+    <div class="card">
+      ${paymentMethodHtml}
+    </div>
+
+    <div class="section-title">Payment Authorization</div>
+    <div class="card">
+      <div class="auth-amount">${fmt(amount)}</div>
+      <div class="auth-date">Scheduled charge: ${chargeDateLabel}</div>
+      <div class="auth-copy">
+        Your card will not be charged today. By completing registration, you authorize Young Actors Theater Academy LLC to charge ${fmt(amount)} to the payment method selected above on ${chargeDateLabel}.
+      </div>
+      <label class="auth-check">
+        <input type="checkbox" id="auth-checkbox" onchange="onAuthCheckChange()">
+        I authorize this future charge.
+      </label>
+      <button class="btn" id="register-btn" onclick="submitRegistration()" disabled>Register for Class</button>
+    </div>
+    ${rosterBlockHtml()}
+  `;
+  formShown = true;
+  renderDemoControls();
+}
+
+function renderClassClosed(container){
+  const msg = closedWhileOpen
+    ? "Registration for this class closed while you were on this page, so your registration was not submitted."
+    : "Registration for this class is closed.";
+  closedWhileOpen = false;
+  container.innerHTML = `
+    <div class="empty-note">${msg}</div>
+  `;
+}
+
+function cardFieldsHtml(){
+  return `
+    <div class="field">
+      <label>Name on Card</label>
+      <input type="text" placeholder="Parent Name">
+    </div>
+    <div class="field">
+      <label>Card Number</label>
+      <input type="text" placeholder="1234 1234 1234 1234">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Expiration</label>
+        <input type="text" placeholder="MM / YY">
+      </div>
+      <div class="field">
+        <label>CVC</label>
+        <input type="text" placeholder="CVC">
+      </div>
+    </div>
+  `;
+}
+
+function cardErrorHtml(){
+  if(!cardErrorMessage) return "";
+  return `<div class="card-error-msg show">${cardErrorMessage}</div>`;
+}
+
+function onAuthCheckChange(){
+  document.getElementById("register-btn").disabled = !document.getElementById("auth-checkbox").checked;
+}
+
+function openAddCard(){
+  addCardMode = true;
+  cardErrorMessage = null;
+  renderMain();
+}
+
+function cancelAddCard(){
+  addCardMode = false;
+  cardErrorMessage = null;
+  renderMain();
+}
+
+function submitRegistration(){
+  // Eligibility and the applicable cutoff are rechecked at submit time. An option that closed while
+  // the parent had the page open cannot be registered, no new card is saved, and nothing is authorized.
+  const closedNotice = selectionClosedNotice();
+  if(closedNotice){
+    closedWhileOpen = !classHasOpenOptions();
+    if(!closedWhileOpen) availabilityNotice = closedNotice;
+    normalizeSelection();
+    renderMain();
+    return;
+  }
+
+  if(!hasSavedCard || addCardMode){
+    if(newCardResult === "declined"){
+      cardErrorMessage = "We couldn't verify this card. Please check the details and try again, or use a different card.";
+      renderMain();
+      return;
+    }
+    if(!hasSavedCard){
+      savedCards = ["Visa &bull;&bull;&bull;&bull; 4242"];
+      selectedCardIndex = 0;
+    } else if(addCardMode){
+      savedCards.push("Visa &bull;&bull;&bull;&bull; 9012");
+      selectedCardIndex = savedCards.length - 1;
+    }
+    hasSavedCard = true;
+    addCardMode = false;
+    cardErrorMessage = null;
+  }
+
+  const amount = computeAmount(registrationType);
+  const chargeDateLabel = computeChargeDateLabel(registrationType, dropInSessionIndex);
+  const sessionEvent = computeSessionEvent(registrationType, dropInSessionIndex);
+  const cardLabel = savedCards[selectedCardIndex];
+  const actorId = currentActorId;
+  const type = registrationType;
+
+  currentView = "processing";
+  formShown = false;
+  document.getElementById("main-content").innerHTML = `
+    <div class="processing-box">
+      <div class="spinner"></div>
+      <div>Registering&hellip;</div>
+    </div>
+  `;
+  renderDemoControls();
+
+  processingTimer = setTimeout(() => {
+    const rec = { actorId, type, amount, chargeDateLabel, sessionEvent, cardLabel };
+    registrations.push(rec);   // persists for the rest of the demo and drives later eligibility
+    lastSuccessRec = rec;
+    renderSuccess();
+  }, 1200);
+}
+
+function renderSuccess(){
+  currentView = "success";
+  formShown = false;
+  const container = document.getElementById("main-content");
+  const rec = lastSuccessRec;
+  const actor = allActors.find(a => a.id === rec.actorId);
+  const stillAvailable = availableActors().filter(a => a.id !== rec.actorId);
+
+  container.innerHTML = `
+    <div class="success-badge"><div class="checkmark">&#10003;</div></div>
+    <div class="success-title">Registration Confirmed</div>
+
+    <div class="success-card">
+      <div class="success-name">${actor.name}</div>
+      <div class="success-sub">${classInfo.title} &middot; ${rec.type}</div>
+      <div class="section-title" style="margin-top:0;">Payment Authorization</div>
+      <div class="success-line amt"><span class="k">Amount</span><span class="v">${fmt(rec.amount)}</span></div>
+      <div class="success-line"><span class="k">Payment Method</span><span class="v">${rec.cardLabel}</span></div>
+      <div class="success-line"><span class="k">Scheduled</span><span class="v">${rec.chargeDateLabel}</span></div>
+    </div>
+    <div class="no-charge-note">No payment was charged today.</div>
+
+    <div class="action-stack">
+      <button class="btn">View My Classes</button>
+      ${stillAvailable.length > 0 && classHasOpenOptions() ? `<button class="btn secondary" onclick="registerAnotherActor()">Register Another Actor</button>` : ``}
+    </div>
+
+    <div class="demo-nav">
+      <span class="demo-nav-tag">Demo only</span>
+      <button class="demo-btn" onclick="backToClass()">Back to Class Registration</button>
+      <span class="demo-nav-note">Navigation aid for this prototype, not a Parent Portal requirement.</span>
+    </div>
+
+    ${rosterBlockHtml()}
+  `;
+  renderDemoControls();
+}
+
+function renderNobodyEligible(container){
+  container.innerHTML = `
+    <div class="empty-note">&#10003; Your eligible actors are already registered for this class.</div>
+    ${rosterBlockHtml()}
+  `;
+}
+
+// Success screen -> back to the class page as a fresh visit: the same actor if they still have options,
+// otherwise the first actor who does. What is offered reflects the registrations made so far.
+function backToClass(){
+  const avail = availableActors();
+  if(avail.length && !avail.find(a => a.id === currentActorId)) currentActorId = avail[0].id;
+  if(avail.length){
+    registrationType = availableTypesFor(currentActorId)[0];
+    dropInSessionIndex = firstEligibleIndex(currentActorId);
+  }
+  renderMain();
+}
+
+// ================= DEMO CONTROLS =================
+function shortClock(v){
+  const [d, t] = v.split("T"); const [y, m, day] = d.split("-").map(Number); const [hh, mm] = t.split(":").map(Number);
+  const mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m - 1];
+  return `${mo} ${day}, ${hh % 12 || 12}:${String(mm).padStart(2, "0")} ${hh >= 12 ? "PM" : "AM"} CT`;
+}
+
+function renderDemoControls(){
+  const known = DEMO_CLOCK_PRESETS.some(pz => pz.value === demoNow);
+  const dateOptions = DEMO_CLOCK_PRESETS.map(pz =>
+    `<option value="${pz.value}"${pz.value === demoNow ? " selected" : ""}>${pz.label} (${shortClock(pz.value)})</option>`).join("")
+    + (known ? "" : `<option value="${demoNow}" selected>${shortClock(demoNow)}</option>`);
+  const listed = classHasOpenOptions();
+  document.getElementById("demo-controls").innerHTML = `
+    <div class="demo-title">Demo Controls <span>&mdash; not part of the parent experience</span></div>
+    <div class="demo-row">
+      <div class="demo-field">
+        <label>Demo date (Central time)</label>
+        <select onchange="onDemoDateChange(this.value)">${dateOptions}</select>
+      </div>
+      <button class="demo-btn" onclick="simulateCutoffPassing()"${formShown ? "" : " disabled"} title="Moves the clock past the selected option's start without refreshing the open form. Then click Register for Class to see the submit-time recheck.">Simulate selected option closing before submit</button>
+    </div>
+    <div class="demo-row">
+      <div class="demo-field">
+        <label>New card result</label>
+        <select onchange="newCardResult = this.value">
+          <option value="valid"${newCardResult === "valid" ? " selected" : ""}>Valid card</option>
+          <option value="declined"${newCardResult === "declined" ? " selected" : ""}>Card declined</option>
+        </select>
+      </div>
+      <div class="demo-field">
+        <label>Parent account (restarts demo)</label>
+        <select onchange="onAccountChange(this.value)">
+          <option value="saved"${accountMode === "saved" ? " selected" : ""}>Has a saved card</option>
+          <option value="new"${accountMode === "new" ? " selected" : ""}>New parent, no saved card</option>
+        </select>
+      </div>
+      <button class="demo-btn" onclick="resetDemo()">Reset Demo</button>
+    </div>
+    <div class="demo-status">Parent class list: <span class="${listed ? "ok" : "no"}">${listed ? "Listed" : "Not listed (no registration option remains)"}</span></div>
+  `;
+}
+
+// Choosing a date is like opening the class page at that time: the form is rebuilt for it. A registration
+// that is already processing, or a confirmation already on screen, is left alone.
+function onDemoDateChange(value){
+  demoNow = value;
+  if(currentView === "form"){
+    availabilityNotice = null; closedWhileOpen = false;
+    ensureValidActor();
+    if(currentActorId) normalizeSelection();
+    renderMain();
+  } else {
+    renderDemoControls();
+  }
+}
+
+// Moves the clock to the selected option's cutoff WITHOUT refreshing the form, as if the parent loaded the
+// page before the cutoff and submits after it.
+function simulateCutoffPassing(){
+  if(!formShown) return;
+  const cutoff = registrationType === "Full Series" ? dropInSessions[0].start : dropInSessions[dropInSessionIndex].start;
+  if(demoNow < cutoff) demoNow = cutoff;
+  renderDemoControls();
+}
+
+function onAccountChange(value){
+  accountMode = value;
+  startDemo();
+}
+
+function resetDemo(){
+  demoNow = DEMO_CLOCK_PRESETS[0].value;
+  newCardResult = "valid";
+  accountMode = "saved";
+  startDemo();
+}
+
+// Clears registrations and card state and returns to the class page.
+function startDemo(){
+  clearTimeout(processingTimer);
+  registrations = [];
+  hasSavedCard = accountMode === "saved";
+  savedCards = hasSavedCard ? ["Visa &bull;&bull;&bull;&bull; 4242"] : [];
+  selectedCardIndex = 0;
+  addCardMode = false;
+  cardErrorMessage = null;
+  availabilityNotice = null;
+  closedWhileOpen = false;
+  lastSuccessRec = null;
+  currentActorId = "jackson";
+  registrationType = "Full Series";
+  dropInSessionIndex = 0;
+  normalizeSelection();
+  renderMain();
+}
+
+renderClassDetail();
+startDemo();
+</script>
+</body>
+</html>
