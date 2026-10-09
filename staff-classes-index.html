@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YATA Staff - Classes</title>
+<style>
+  :root{
+    --bg: #0b0b0c;
+    --panel: #131315;
+    --line: #3a352c;
+    --line-soft: #29261f;
+    --cream: #f2ead9;
+    --cream-dim: #cfc7b3;
+    --grey: #948f83;
+    --green: #7fae8e;
+    --amber: #d1a85e;
+    --rose: #c98b7a;
+  }
+  * { box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--cream-dim); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .app{ display: grid; grid-template-columns: 210px 1fr; min-height: 100vh; }
+
+  .sidebar{ background: #0e0e10; border-right: 1px solid var(--line-soft); padding: 24px 0; }
+  .logo{ padding: 0 22px 24px; font-family: Georgia, serif; color: var(--cream); font-size: 15px; letter-spacing: 0.05em; border-bottom: 1px solid var(--line-soft); margin-bottom: 12px; }
+  .nav-item{ padding: 11px 22px; font-size: 12.5px; letter-spacing: 0.03em; color: var(--grey); text-transform: uppercase; }
+  .nav-item.active{ color: var(--cream); background: rgba(255,255,255,0.03); border-left: 2px solid var(--amber); }
+
+  .main{ padding: 36px 40px 80px; min-width: 0; }
+  h1{ font-family: Georgia, serif; font-weight: 400; font-size: 40px; color: var(--cream); margin: 0 0 20px; }
+  h2{ font-family: Georgia, serif; font-weight: 400; font-size: 24px; color: var(--cream); margin: 0 0 6px; }
+  .section-sub{ font-size: 13px; color: var(--grey); margin: 0 0 18px; line-height: 1.5; }
+
+  /* Wireframe legend */
+  .sim-banner{ border: 1px dashed var(--amber); padding: 9px 14px; margin-bottom: 22px; font-size: 12px; line-height: 1.55; color: var(--grey); }
+  .sim-banner strong{ color: var(--amber); font-weight: 600; }
+  .sim-tag{ display:inline-block; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); border: 1px dashed var(--amber); padding: 1px 6px; margin-left: 8px; vertical-align: middle; }
+  .sim-box{ border: 1px dashed var(--line); padding: 10px 12px; font-size: 12px; color: var(--grey); line-height: 1.55; margin: 0 0 16px; }
+  .rule-note{ font-size: 12px; color: var(--grey); line-height: 1.55; margin: 0 0 14px; }
+
+  .tabs{ display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 26px; }
+  .tab{ padding: 11px 18px; font-size: 12.5px; letter-spacing: 0.04em; color: var(--grey); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; text-transform: uppercase; }
+  .tab.active{ color: var(--cream); border-bottom-color: var(--amber); }
+  .panel{ display: none; }
+  .panel.active{ display: block; }
+
+  .filter-bar{ display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+  .filter-field{ display: flex; flex-direction: column; gap: 5px; }
+  .filter-field label{ font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); }
+  .filter-field select, .filter-field input{ background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 8px 10px; font-size: 13px; min-width: 140px; }
+  .filter-field.search input{ min-width: 260px; }
+  .btn{ background: none; border: 1px solid var(--line); color: var(--cream-dim); padding: 9px 16px; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; height: 36px; }
+  .btn:hover{ border-color: var(--cream-dim); }
+  .btn.primary{ border-color: var(--amber); color: var(--amber); }
+  .btn.primary:hover{ background: rgba(209,168,94,0.08); }
+  .btn.danger{ border-color: var(--rose); color: var(--rose); }
+  .btn.danger:hover{ background: rgba(201,139,122,0.08); }
+  .btn.small{ height: auto; padding: 7px 13px; font-size: 11px; }
+  .btn:disabled{ opacity: 0.35; cursor: default; }
+  .btn-apply{ background: none; border: 1px solid var(--amber); color: var(--amber); padding: 8px 16px; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; height: 36px; }
+  .btn-apply:hover{ background: rgba(209,168,94,0.08); }
+
+  .kv-row{ display:flex; gap: 16px; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .kv-row:last-of-type{ border-bottom: none; }
+  .kv-row .k{ width: 150px; flex-shrink: 0; color: var(--grey); }
+  .kv-row .v{ color: var(--cream-dim); }
+
+  .table-wrap{ border: 1px solid var(--line); overflow-x: auto; margin-bottom: 8px; }
+  .head-row, .row-grid{ display: grid; gap: 10px; padding: 12px 16px; align-items: center; }
+  .head-row{ font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); border-bottom: 1px solid var(--line-soft); }
+  .row-grid{ border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+  .row-grid:last-child{ border-bottom: none; }
+  .row-grid:hover{ background: rgba(255,255,255,0.02); }
+  .row-grid.muted > div{ opacity: 0.55; }
+  .row-grid.muted > .assign-panel{ opacity: 1; }
+  .empty-row{ padding: 28px 16px; text-align:center; color: var(--grey); font-size: 13px; }
+
+  .grid-classes{ grid-template-columns: minmax(220px,1.6fr) 120px 170px 110px 140px 240px; min-width: 960px; }
+  .sched-cell{ line-height: 1.45; font-size: 12.5px; }
+  .sched-cell > div{ white-space: nowrap; }
+  .grid-full{ grid-template-columns: minmax(170px,1.4fr) minmax(130px,1fr) 160px 140px; min-width: 620px; }
+  .grid-drop{ grid-template-columns: minmax(170px,1.4fr) minmax(130px,1fr) 160px 140px; min-width: 620px; }
+  .grid-sroster{ grid-template-columns: minmax(170px,1.4fr) minmax(130px,1fr) 160px; min-width: 520px; }
+  .grid-sched{ grid-template-columns: 130px 150px 80px 80px 110px 120px 80px 110px; min-width: 860px; }
+  .grid-content{ grid-template-columns: minmax(160px,1.4fr) 90px 100px minmax(140px,1fr) 100px 180px; min-width: 800px; }
+
+  .c-name{ color: var(--cream); }
+  .c-dim{ color: var(--cream-dim); }
+  .c-grey{ color: var(--grey); }
+  .c-actions{ display:flex; gap: 12px; flex-wrap: wrap; }
+  .action-link{ color: var(--amber); font-size: 12px; text-decoration: none; cursor: pointer; background:none; border:none; padding:0; font-family: inherit; }
+  .action-link:hover{ text-decoration: underline; }
+  .action-link.muted{ color: var(--grey); }
+  .action-link.rose{ color: var(--rose); }
+  .head-row span, .row-grid > div:not(.c-actions):not(.assign-panel){ text-align: left; }
+
+  .status{ font-size: 10px; padding: 3px 8px; border: 1px solid; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; display:inline-block; }
+  .status.active, .status.paid, .status.published{ color: var(--green); border-color: var(--green); }
+  .status.scheduled, .status.draft{ color: var(--amber); border-color: var(--amber); }
+  .status.authorization-required, .status.payment-failed, .status.canceled{ color: var(--rose); border-color: var(--rose); }
+  .status.completed, .status.complete, .status.archived, .status.withdrawn, .status.no-payment-due, .status.cancelled, .status.session-canceled, .status.class-canceled{ color: var(--grey); border-color: var(--grey); }
+
+  .accordion{ border: 1px solid var(--line); margin-bottom: 22px; }
+  .accordion-header{ display:flex; justify-content: space-between; align-items: center; padding: 14px 18px; cursor: pointer; }
+  .accordion-header:hover{ background: rgba(255,255,255,0.015); }
+  .accordion-title{ font-size: 13px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--amber); }
+  .accordion-chevron{ font-size: 13px; color: var(--grey); transition: transform 0.15s ease; flex-shrink:0; margin-left: 16px; }
+  .accordion.open .accordion-chevron{ transform: rotate(90deg); }
+  .accordion-body{ display:none; padding: 4px 18px 22px; border-top: 1px solid var(--line-soft); }
+  .accordion.open .accordion-body{ display:block; }
+
+  .field{ margin-bottom: 16px; }
+  .field label{ display:block; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--grey); margin-bottom: 6px; }
+  .field select, .field input[type=text], .field input[type=date], .field input[type=time], .field input[type=number], .field textarea{ width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 9px 11px; font-size: 13.5px; font-family: inherit; }
+  .field textarea{ resize: vertical; min-height: 64px; }
+  .field-row{ display:flex; gap: 14px; flex-wrap: wrap; }
+  .field-row .field{ flex:1; min-width: 160px; }
+  .field-hint{ font-size: 11.5px; color: var(--grey); margin-top: 5px; }
+  .check-row{ display:flex; align-items:center; gap:8px; margin: 4px 0 14px; font-size:13px; color:var(--cream-dim); text-transform:none; letter-spacing:normal; }
+  .check-row input{ width:auto; margin:0; flex-shrink:0; }
+  .field-error, .form-error{ color: var(--rose); font-size: 12.5px; margin: 0 0 10px; display:none; line-height: 1.5; }
+
+  .assign-panel{ grid-column: 1 / -1; border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 14px; }
+  .assign-panel-summary{ font-size: 13px; color: var(--grey); margin-bottom: 14px; line-height: 1.6; }
+  .assign-panel-summary strong{ color: var(--cream-dim); font-weight: 500; }
+  .assign-panel-actions{ display:flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+  .result-panel{ border: 1px solid var(--amber); padding: 16px 18px; margin-top: 10px; }
+  .result-title{ font-family: Georgia, serif; font-size: 15px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--amber); margin-bottom: 10px; }
+  .result-line{ font-size: 13.5px; color: var(--cream-dim); margin-bottom: 4px; line-height: 1.5; }
+  .result-amount{ font-family: Georgia, serif; font-size: 20px; color: var(--cream); margin: 8px 0; }
+  .auth-required-title{ font-family: Georgia, serif; font-size: 14px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--amber); margin: 14px 0 6px; }
+
+  .pagination{ display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 12.5px; color: var(--grey); }
+  .pagination .pages{ display:flex; gap: 6px; }
+  .pagination button{ background: none; border: 1px solid var(--line); color: var(--cream-dim); padding: 6px 12px; font-size: 12.5px; cursor: pointer; }
+  .pagination button.current{ border-color: var(--amber); color: var(--amber); }
+  .pagination button:disabled{ opacity: 0.35; cursor: default; }
+
+  .detail-head{ display:flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  .detail-head h1{ margin: 0; }
+  .head-actions{ display:flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .back-link{ color: var(--cream-dim); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; background:none; border:none; margin-left: 8px; font-family: inherit; }
+  .back-link:hover{ color: var(--cream); }
+  .detail-sub{ display:flex; align-items:center; gap:12px; margin-bottom: 20px; }
+
+  .stat-line{ font-size: 14px; color: var(--cream-dim); margin: 0 0 14px; }
+  .stat-line strong{ color: var(--cream); font-weight: 500; }
+  .desc-block{ font-size: 13.5px; line-height: 1.65; color: var(--cream-dim); margin: 18px 0; max-width: 760px; }
+
+  .plink{ color: var(--cream); text-decoration: none; border-bottom: 1px dotted var(--grey); cursor: pointer; }
+  .plink:hover{ color: var(--amber); border-bottom-color: var(--amber); }
+  .row-grid.clickable{ cursor: pointer; }
+  .row-grid.clickable:hover{ background: rgba(209,168,94,0.06); }
+  .row-grid.clickable:focus{ outline: 1px solid var(--amber); outline-offset: -1px; }
+  .class-img{ display:block; width: 240px; height: 160px; object-fit: cover; border: 1px solid var(--line); }
+  .img-empty{ width: 240px; height: 160px; border: 1px dashed var(--line); display:flex; align-items:center; justify-content:center; text-align:center; padding: 10px; color: var(--grey); font-size: 12.5px; }
+  .img-slot{ margin-bottom: 10px; }
+  .img-label{ font-size: 11.5px; color: var(--grey); margin-bottom: 6px; }
+  .ov-top{ display:flex; gap: 24px; align-items:flex-start; flex-wrap: wrap; margin-bottom: 10px; }
+  .ov-top .desc-block{ flex: 1; min-width: 260px; margin-top: 0; }
+  #nav-toast{ position: fixed; right: 24px; bottom: 24px; max-width: 380px; background: var(--panel); border: 1px dashed var(--amber); padding: 12px 14px; font-size: 12.5px; line-height: 1.55; color: var(--cream-dim); display:none; z-index: 50; }
+  .drop-bar{ display:flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin: 6px 0 12px; }
+  .drop-count{ font-size: 13px; color: var(--cream-dim); padding-bottom: 9px; }
+  .drop-count strong{ color: var(--cream); font-weight: 500; }
+  .file-chip{ font-size: 12.5px; color: var(--cream-dim); border: 1px solid var(--line); padding: 8px 12px; display:inline-block; margin: 0 0 12px; }
+  input[type=file]{ color: var(--cream-dim); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">YATA STAFF</div>
+    <div class="nav-item">Dashboard</div>
+    <div class="nav-item">Parent Portal</div>
+    <div class="nav-item">Families</div>
+    <div class="nav-item">Students</div>
+    <div class="nav-item">Staff</div>
+    <div class="nav-item">Rooms</div>
+    <div class="nav-item">Productions</div>
+    <div class="nav-item active">Classes</div>
+    <div class="nav-item">Lessons</div>
+    <div class="nav-item">Billing</div>
+    <div class="nav-item">Email</div>
+    <div class="nav-item">Reports</div>
+  </div>
+
+  <div class="main">
+    <div class="sim-banner">
+      <strong>Wireframe &mdash; simulated interactions.</strong> Dashed boxes and <span class="sim-tag" style="margin-left:0;">Simulated</span> tags mark demo-only behavior: no payments or Stripe calls are made, file uploads are faked, the discount-code list is sample data, and "today" is fixed at 10/09/26. Plain gray notes describe business rules intended for implementation.
+    </div>
+
+    <!-- ===================== CLASSES LIST ===================== -->
+    <div id="view-list">
+      <h1>Classes</h1>
+
+      <div class="accordion" id="acc-add-class">
+        <div class="accordion-header" onclick="toggleAccordion('acc-add-class')">
+          <div class="accordion-title">+ Add Class</div>
+          <div class="accordion-chevron">&#9656;</div>
+        </div>
+        <div class="accordion-body">
+          <div id="add-class-form-wrap"></div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-field search">
+          <label>Search</label>
+          <input type="text" id="cl-search" placeholder="Class name...">
+        </div>
+        <div class="filter-field">
+          <label>Status</label>
+          <select id="cl-status">
+            <option selected>Active</option>
+            <option>Complete</option>
+            <option>Canceled</option>
+            <option>Archived</option>
+            <option>All</option>
+          </select>
+        </div>
+        <button class="btn-apply" onclick="applyClassFilters()">Apply</button>
+      </div>
+      <div class="rule-note" style="margin-top:-4px;">Active shows Scheduled classes, including classes that have already started but still have upcoming sessions. A class becomes Complete automatically once its last scheduled session has passed; staff never mark classes complete. Canceled and Archived are set by staff.</div>
+      <div id="list-notice"></div>
+
+      <div class="table-wrap">
+        <div class="head-row grid-classes">
+          <span>Class</span><span>Status</span><span>First Class</span><span>Room</span><span>Fee</span><span>Actions</span>
+        </div>
+        <div id="classes-list"></div>
+      </div>
+      <div class="pagination">
+        <span id="classes-count-label"></span>
+        <div class="pages" id="classes-page-buttons"></div>
+      </div>
+    </div>
+
+    <!-- ===================== CLASS DETAIL ===================== -->
+    <div id="view-detail" style="display:none;">
+      <div class="detail-head">
+        <h1 id="d-title"></h1>
+        <div class="head-actions">
+          <button class="btn" id="d-btn-duplicate" onclick="startClassAction('duplicate', currentId, 'detail')">Duplicate</button>
+          <button class="btn" id="d-btn-archive" onclick="startClassAction('archive', currentId, 'detail')">Archive</button>
+          <button class="btn" id="d-btn-cancel" onclick="startClassAction('cancel', currentId, 'detail')">Cancel Class</button>
+          <button class="back-link" onclick="showList()">Back to List &rarr;</button>
+        </div>
+      </div>
+      <div class="detail-sub"><span id="d-status-badge"></span><span class="c-grey" id="d-sub" style="font-size:13px;"></span></div>
+      <div id="d-action-panel"></div>
+
+      <div class="tabs" id="detail-tabs">
+        <div class="tab active" data-tab="overview">Overview</div>
+        <div class="tab" data-tab="roster">Roster</div>
+        <div class="tab" data-tab="schedule">Schedule</div>
+        <div class="tab" data-tab="content">Content</div>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div class="panel active" id="panel-overview">
+        <div id="ov-summary"></div>
+        <div id="ov-edit"></div>
+      </div>
+
+      <!-- ROSTER -->
+      <div class="panel" id="panel-roster">
+        <h2>Roster</h2>
+        <div class="stat-line" id="roster-stats"></div>
+
+        <div class="accordion" id="acc-add-student">
+          <div class="accordion-header" onclick="toggleAccordion('acc-add-student')">
+            <div class="accordion-title">+ Add Student</div>
+            <div class="accordion-chevron">&#9656;</div>
+          </div>
+          <div class="accordion-body">
+            <div class="rule-note" style="margin-top:14px;">Uses the same Full Series and Drop-In rules as parent registration: Full Series is one charge for the whole class; Drop-In is one charge for one class date. A student can't hold a Full Series and a Drop-In for the same class. Staff adding a student does not authorize payment on the parent's behalf.</div>
+            <div class="field">
+              <label>Student</label>
+              <select id="rs-student"></select>
+            </div>
+            <div class="field">
+              <label>Registration Type</label>
+              <select id="rs-type" onchange="onRosterTypeChange()"></select>
+              <div class="field-hint" id="rs-type-detail"></div>
+            </div>
+            <div class="field" id="rs-date-field" style="display:none;">
+              <label>Select Class Date</label>
+              <select id="rs-date"></select>
+              <div class="field-hint">Only upcoming, drop-in-eligible sessions are offered. <span class="sim-tag" style="margin-left:0;">Simulated</span> The registration cutoff window is specified separately and is not modeled here.</div>
+            </div>
+            <div class="field">
+              <label>Discount Code (optional)</label>
+              <input type="text" id="rs-code" placeholder="e.g. WELCOME10" style="text-transform:uppercase;">
+              <div class="field-hint"><span class="sim-tag" style="margin-left:0;">Simulated</span> Demo codes: WELCOME10 (10% off, any class), DRAGON20 (20% off, Fly Like a Dragon only), SHREK50 ($50 off, Productions only), OLD15 (expired).</div>
+            </div>
+            <label class="check-row"><input type="checkbox" id="rs-override"> Override capacity</label>
+            <div class="form-error" id="rs-error"></div>
+            <button class="btn primary" onclick="submitAddStudent()">Add to Roster</button>
+            <div id="rs-result"></div>
+          </div>
+        </div>
+
+        <h2 style="margin-top:34px;">Full-Series Registrations</h2>
+        <div class="drop-bar" style="margin-bottom:12px;">
+          <div class="filter-field"><label>Status</label><select id="full-status" onchange="onRosterFilterChange()"><option selected>Active</option><option>All</option></select></div>
+        </div>
+        <div id="full-notice"></div>
+        <div class="table-wrap">
+          <div class="head-row grid-full"><span>Student</span><span>Family</span><span>Enrollment Status</span><span>Actions</span></div>
+          <div id="roster-full"></div>
+        </div>
+
+        <h2 style="margin-top:34px;">Drop-In Registrations</h2>
+        <div class="section-sub">Drop-In registrations belong to one class date. Choose a session to see who is registered for it. To enroll a student, use + Add Student above.</div>
+        <div class="drop-bar">
+          <div class="filter-field"><label>Session Date</label><select id="drop-session" style="min-width:260px;" onchange="onDropSessionChange()"></select></div>
+          <div class="filter-field"><label>Status</label><select id="drop-status" onchange="onRosterFilterChange()"><option selected>Active</option><option>All</option></select></div>
+          <div class="drop-count" id="drop-count"></div>
+        </div>
+        <div id="drop-notice"></div>
+        <div class="table-wrap">
+          <div class="head-row grid-drop"><span>Student</span><span>Family</span><span>Enrollment Status</span><span>Actions</span></div>
+          <div id="roster-drop"></div>
+        </div>
+      </div>
+
+      <!-- SCHEDULE -->
+      <div class="panel" id="panel-schedule">
+        <h2>Schedule</h2>
+        <div class="section-sub">Sessions drive the class's date range, drop-in availability and session rosters. Click a session to open its details and combined roster. Enrollment is managed from the Roster tab.</div>
+
+        <div class="accordion" id="acc-add-event">
+          <div class="accordion-header" onclick="toggleAccordion('acc-add-event')">
+            <div class="accordion-title">+ Add Event</div>
+            <div class="accordion-chevron">&#9656;</div>
+          </div>
+          <div class="accordion-body">
+            <div class="field-row" style="margin-top:14px;">
+              <div class="field"><label>Type</label><select id="se-type"><option>Class Session</option><option>Makeup Session</option><option>Special Event</option></select></div>
+              <div class="field"><label>Room</label><select id="se-room"></select></div>
+            </div>
+            <div class="field"><label>Instructor</label><select id="se-instructor"></select></div>
+            <div class="field-row">
+              <div class="field"><label>Date</label><input type="date" id="se-date"></div>
+              <div class="field"><label>Start Time</label><input type="time" id="se-start"></div>
+              <div class="field"><label>End Time</label><input type="time" id="se-end"></div>
+            </div>
+            <div class="field"><label>Status</label><select id="se-status"><option>Scheduled</option><option>Canceled</option></select></div>
+            <div class="field-row">
+              <div class="field" style="align-self:flex-end;"><label class="check-row" style="margin:0 0 10px;"><input type="checkbox" id="se-dropin" onchange="onEventDropInChange()"> Drop-in eligible</label></div>
+              <div class="field" id="se-dropprice-field"><label>Drop-in Price ($)</label><input type="text" id="se-dropprice"></div>
+            </div>
+            <div class="field" id="se-dropcap-field"><label>Drop-in Capacity</label><input type="text" id="se-dropcap" placeholder="Class default"></div>
+            <label class="check-row"><input type="checkbox" id="se-recur" onchange="document.getElementById('se-until-field').style.display=this.checked?'block':'none'"> Create recurring sessions</label>
+            <div class="field" id="se-until-field" style="display:none;"><label>Repeat Weekly Until</label><input type="date" id="se-until"><div class="field-hint">One session per week on the same weekday, up to 52 sessions.</div></div>
+            <label class="check-row"><input type="checkbox" id="se-override"> Override conflicts</label>
+            <div class="form-error" id="se-error"></div>
+            <button class="btn primary" onclick="submitAddEvent()">Add to Schedule</button>
+            <div id="se-result"></div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="head-row grid-sched"><span>Type</span><span>Date</span><span>Start</span><span>End</span><span>Room</span><span>Instructor</span><span>Drop-in</span><span>Status</span></div>
+          <div id="sched-list"></div>
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="panel" id="panel-content">
+        <h2>Content</h2>
+        <div class="section-sub">Class materials students and parents can access (rehearsal tracks, videos, handouts). Published items are visible to registered families; Draft items are staff-only.</div>
+
+        <div class="accordion" id="acc-add-content">
+          <div class="accordion-header" onclick="toggleAccordion('acc-add-content')">
+            <div class="accordion-title">+ Add Content</div>
+            <div class="accordion-chevron">&#9656;</div>
+          </div>
+          <div class="accordion-body">
+            <div class="field" style="margin-top:14px;"><label>Title</label><input type="text" id="ct-title" placeholder="e.g. Week 1 warm-up track"></div>
+            <div class="field-row">
+              <div class="field"><label>Type</label><select id="ct-type" onchange="onContentTypeChange()"><option>Audio</option><option>Video</option><option>Document</option><option>Image</option></select></div>
+              <div class="field"><label>Publish Status</label><select id="ct-status"><option>Published</option><option>Draft</option></select></div>
+            </div>
+            <div class="field">
+              <label>File *</label>
+              <input type="file" id="ct-file" onchange="onContentFileChosen()">
+              <div class="field-hint">Upload the file for this content item. Choose the matching type above first.</div>
+            </div>
+            <div id="ct-filestate"></div>
+            <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+              <button class="btn small" onclick="simulateUpload()">Upload File</button>
+              <button class="btn small" onclick="useSampleFile()">Use sample file (demo)</button>
+              <span class="sim-tag" style="margin:0; align-self:center;">Simulated &mdash; nothing is actually uploaded</span>
+            </div>
+            <div class="form-error" id="ct-error"></div>
+            <button class="btn primary" onclick="saveContent()">Save Content</button>
+            <div id="ct-result"></div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="head-row grid-content"><span>Title</span><span>Type</span><span>Status</span><span>File</span><span>Added</span><span>Actions</span></div>
+          <div id="content-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== SESSION DETAIL ===================== -->
+    <div id="view-session" style="display:none;">
+      <div id="sd-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================================================================
+// DEMO DATA ONLY - not production business rules.
+// ===================================================================
+const TODAY = "2026-10-09";   // DEMO: fixed reference date
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const ROOMS = ["Studio A","Studio B","Main Stage"];
+const INSTRUCTORS = ["Ms. Rivera","Mr. Delgado","Ms. Chen"];
+const UNASSIGNED = "—";
+
+const STUDENTS = [
+  { name:"Abby Raymond", family:"Raymond" }, { name:"Andrew Anderman", family:"Anderman" },
+  { name:"Cohen Andermen", family:"Andermen" }, { name:"Jackson Andermen", family:"Andermen" }, { name:"Vivian Andermen", family:"Andermen" },
+  { name:"Emma Johnson", family:"Johnson" }, { name:"Jack Smith", family:"Smith" }, { name:"Jill Smith", family:"Smith" },
+  { name:"Jackson Morris", family:"Morris" }, { name:"Morgan Morris", family:"Morris" },
+  { name:"Greg Declined CC", family:"Declined CC" }, { name:"Ellie Stamos", family:"Stamos" }, { name:"Nora Swenson", family:"Swenson" },
+  { name:"Liam Carter", family:"Carter" }, { name:"Sophie Reynolds", family:"Reynolds" }, { name:"Maya Thompson", family:"Thompson" }
+];
+
+// DEMO discount codes (production validation lives in Discount Codes in Billing)
+const DEMO_CODES = {
+  WELCOME10: { type:"percent", amount:10, appliesTo:"any" },
+  DRAGON20:  { type:"percent", amount:20, appliesTo:"Fly Like a Dragon" },
+  SHREK50:   { type:"fixed",   amount:50, appliesTo:"Production" },
+  OLD15:     { type:"percent", amount:15, appliesTo:"any", expired:true }
+};
+
+function pad(n){ return String(n).padStart(2,"0"); }
+function parseISO(iso){ const p = iso.split("-").map(Number); return new Date(p[0], p[1]-1, p[2]); }
+function toISO(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function addDays(iso, n){ const d = parseISO(iso); d.setDate(d.getDate()+n); return toISO(d); }
+function longDate(iso){ const d = parseISO(iso); return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; }
+function dayName(iso){ return DAYS[parseISO(iso).getDay()]; }
+function timeLabel(t){ if(!t) return ""; let [h,m] = t.split(":").map(Number); const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12; return `${h}:${pad(m)} ${ap}`; }
+function fmt(n){ return "$" + Number(n).toFixed(2); }
+function esc(t){ return String(t == null ? "" : t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function statusClass(s){ return String(s).toLowerCase().replace(/\s+/g,"-"); }
+function badge(s){ return `<span class="status ${statusClass(s)}">${esc(s)}</span>`; }
+
+let uid = 1000;
+function nextId(p){ return p + (uid++); }
+
+function weeklyDates(startISO, endISO){
+  const out = []; let d = startISO;
+  while(d <= endISO && out.length < 52){ out.push(d); d = addDays(d, 7); }
+  return out;
+}
+function mkSession(c, date, over){
+  return Object.assign({ id: nextId("s"), type:"Class Session", date, start:c.defStart, end:c.defEnd, room:c.room, instructor:c.instructor,
+    dropIn: c.dropEnabled, dropPrice: c.dropFee, dropCap: null, status: date < TODAY ? "Completed" : "Scheduled" }, over || {});
+}
+function mkClass(p, startISO, endISO){
+  const c = Object.assign({ id: nextId("c"), description:"", room:UNASSIGNED, instructor:UNASSIGNED, capacity:12, dropCapacity:6,
+    fullEnabled:true, fullFee:150, dropEnabled:true, dropFee:30, state:null, prevState:null, defStart:"16:00", defEnd:"17:00",
+    sessions:[], regs:[], content:[], image:null }, p);
+  if(startISO) weeklyDates(startISO, endISO).forEach(d => c.sessions.push(mkSession(c, d)));
+  return c;
+}
+function seedReg(c, student, type, session, pay, amount){
+  const s = STUDENTS.find(x => x.name === student);
+  const base = type === "Full Series" ? c.fullFee : (session ? session.dropPrice : c.dropFee);
+  c.regs.push({ id: nextId("r"), student, family: s ? s.family : "—", type, sessionId: session ? session.id : null, status:"Active",
+    base, amount: amount != null ? amount : base, code:null, pay, chargeDate:null });
+}
+
+const classes = [];
+
+(function seed(){
+  const fly = mkClass({ name:"Fly Like a Dragon", description:"A high-flying movement and storytelling class where young performers build a dragon-world ensemble piece, exploring physical character work, vocal projection and imagination.",
+    room:UNASSIGNED, instructor:UNASSIGNED, capacity:12, dropCapacity:6, fullFee:150, dropFee:29, defStart:"16:30", defEnd:"17:00" }, "2026-09-23", "2026-11-04");
+  classes.push(fly);
+  const sess = d => fly.sessions.find(s => s.date === d);
+  seedReg(fly, "Greg Declined CC", "Full Series", null, "Paid");
+  seedReg(fly, "Jackson Andermen", "Full Series", null, "Paid");
+  seedReg(fly, "Morgan Morris", "Full Series", null, "Authorization Required");
+  seedReg(fly, "Emma Johnson", "Drop-In", sess("2026-09-30"), "Paid");
+  seedReg(fly, "Abby Raymond", "Drop-In", sess("2026-10-07"), "Paid");
+  seedReg(fly, "Andrew Anderman", "Drop-In", sess("2026-10-07"), "Paid");
+  seedReg(fly, "Ellie Stamos", "Drop-In", sess("2026-10-07"), "Paid");
+  seedReg(fly, "Nora Swenson", "Drop-In", sess("2026-10-07"), "Payment Failed");
+  seedReg(fly, "Jill Smith", "Drop-In", sess("2026-10-07"), "Paid");
+  fly.regs[fly.regs.length-1].status = "Withdrawn";           // DEMO: a withdrawn drop-in kept in history
+  seedReg(fly, "Jack Smith", "Drop-In", sess("2026-10-21"), "Authorization Required");
+  fly.image = { name:"fly-like-a-dragon.jpg", src: sampleImg("Fly Like a Dragon"), sample:true };
+
+  const shrek = mkClass({ name:"Shrek – Legacy of the Swamp Creatures", description:"Head back to the swamp! Young performers explore favorite songs and scenes inspired by the world of Shrek, building confidence, character work and ensemble skills.",
+    room:"Studio B", instructor:"Ms. Rivera", capacity:4, dropCapacity:4, fullFee:125, dropFee:50, defStart:"16:00", defEnd:"16:30" }, "2026-09-16", "2026-11-04");
+  classes.push(shrek);
+  shrek.image = { name:"shrek-swamp-creatures.jpg", src: sampleImg("Shrek Swamp"), sample:true };
+  ["Jack Smith","Jill Smith","Liam Carter","Sophie Reynolds"].forEach((n,i) => seedReg(shrek, n, "Full Series", null, i < 3 ? "Paid" : "Scheduled"));
+
+  classes.push(mkClass({ name:"Winter Showcase Workshop", description:"Prepare a polished winter showcase piece with scene study, vocal coaching and staging.",
+    room:"Studio A", instructor:"Ms. Chen", capacity:10, dropCapacity:5, fullFee:140, dropFee:35, defStart:"16:00", defEnd:"17:00" }, "2026-11-11", "2026-12-16"));
+  classes.push(mkClass({ name:"Musical Theater Dance Fundamentals", description:"Technique, rhythm and choreography for the musical stage.",
+    room:"Main Stage", instructor:"Mr. Delgado", capacity:12, dropCapacity:6, fullFee:180, dropFee:30, defStart:"10:00", defEnd:"11:00" }, "2026-10-17", "2026-12-05"));
+  classes.push(mkClass({ name:"Tween Acting Studio", description:"Scene work and audition skills for ages 10–13.",
+    room:"Studio A", instructor:"Ms. Rivera", capacity:10, dropCapacity:4, fullFee:160, dropFee:32, defStart:"17:00", defEnd:"18:00" }, "2026-09-10", "2026-11-12"));
+  classes.push(mkClass({ name:"Little Players – Storytime Theater", description:"Imaginative play and story-based theater games for our youngest actors.",
+    room:"Studio B", instructor:"Ms. Chen", capacity:8, dropCapacity:3, fullFee:110, dropFee:25, defStart:"09:30", defEnd:"10:15" }, "2026-10-20", "2026-11-24"));
+
+  const a1 = mkClass({ name:"Acting for Beginner - Series 1", fullFee:225, dropEnabled:false, room:UNASSIGNED, defStart:"11:00", defEnd:"12:00", state:"Canceled" }, "2026-09-12", "2026-09-12");
+  const a2 = mkClass({ name:"Acting for Beginner - Series 2", fullFee:225, dropEnabled:false, room:UNASSIGNED, defStart:"11:30", defEnd:"12:00", state:"Canceled" }, "2026-09-12", "2026-10-10");
+  const a3 = mkClass({ name:"Acting for Beginners - bug recreation testing", fullFee:250, dropEnabled:false, room:UNASSIGNED, defStart:"11:15", defEnd:"12:00", state:"Canceled" }, "2026-09-12", "2026-10-03");
+  [a1,a2,a3].forEach(c => c.sessions.forEach(s => { s.status = "Canceled"; }));
+  classes.push(a1, a2, a3);
+
+  classes.push(mkClass({ name:"Summer Improv Camp", fullFee:200, dropFee:40, room:"Studio A", instructor:"Mr. Delgado", defStart:"13:00", defEnd:"15:00" }, "2026-06-01", "2026-07-20"));
+  classes.push(mkClass({ name:"Spring Voice Series", fullFee:170, dropFee:35, room:"Studio B", instructor:"Ms. Chen", defStart:"15:30", defEnd:"16:30" }, "2026-03-04", "2026-04-22"));
+  classes.push(mkClass({ name:"Intro to Stage Combat", fullFee:130, dropFee:30, room:"Main Stage", instructor:"Mr. Delgado", defStart:"18:00", defEnd:"19:00", state:"Archived", prevState:null }, "2026-02-03", "2026-03-10"));
+  classes.push(mkClass({ name:"Audition Prep Workshop", fullFee:90, dropEnabled:false, room:"Studio A", instructor:"Ms. Rivera", defStart:"18:00", defEnd:"19:30" }, "2026-08-05", "2026-08-26"));
+  classes.push(mkClass({ name:"Monologue Intensive", fullFee:120, dropFee:30, room:"Studio B", instructor:"Ms. Chen", defStart:"17:30", defEnd:"18:30" }, "2026-08-10", "2026-09-14"));
+
+  fly.content.push({ id: nextId("ct"), title:"Dragon Song – rehearsal track", type:"Audio", status:"Published", file:"dragon-song-rehearsal.mp3", added:"2026-09-24" });
+  fly.content.length = 0; // The existing class shows "No content uploaded yet." - add items to test.
+  shrek.content.push({ id: nextId("ct"), title:"Swamp Creatures – script excerpt", type:"Document", status:"Published", file:"swamp-script.pdf", added:"2026-09-17" });
+  shrek.content.push({ id: nextId("ct"), title:"Ensemble number demo", type:"Video", status:"Draft", file:"ensemble-demo.mp4", added:"2026-09-30" });
+})();
+
+// ===================================================================
+// Derived data helpers
+// ===================================================================
+function findClass(id){ return classes.find(c => c.id === id); }
+function liveSessions(c){ return c.sessions.filter(s => s.status !== "Canceled").sort((a,b) => a.date.localeCompare(b.date)); }
+function classStatus(c){
+  if(c.state) return c.state;                       // Canceled / Archived are set by staff
+  const ls = liveSessions(c);
+  if(!ls.length) return "Scheduled";
+  return TODAY > ls[ls.length-1].date ? "Complete" : "Scheduled";   // derived: finished schedule => Complete
+}
+function isActiveClass(c){ return classStatus(c) === "Scheduled"; }
+function shortDate(iso, withYear){ const d = parseISO(iso); return `${MONTHS[d.getMonth()].slice(0,3)} ${d.getDate()}${withYear ? ", " + d.getFullYear() : ""}`; }
+function shortTime(t){ let [h,m] = t.split(":").map(Number); const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12; return { txt: `${h}:${pad(m)}`, ap }; }
+function timeRange(a, b){ const x = shortTime(a), y = shortTime(b); return x.ap === y.ap ? `${x.txt}–${y.txt} ${y.ap}` : `${x.txt} ${x.ap}–${y.txt} ${y.ap}`; }
+function firstSession(c){ return c.sessions.length ? c.sessions.slice().sort((a,b) => a.date.localeCompare(b.date))[0] : null; }   // earliest session of any status
+// Compact three-line First Class: weekday / date / time range
+function scheduleText(c){
+  const f = firstSession(c);
+  if(!f) return `<div class="sched-cell"><div class="c-grey">Not scheduled</div></div>`;
+  return `<div class="sched-cell"><div>${dayName(f.date)}</div><div>${shortDate(f.date, true)}</div><div class="c-grey">${timeRange(f.start, f.end)}</div></div>`;
+}
+function feeText(c){
+  const parts = [];
+  if(c.fullEnabled) parts.push(`${fmt(c.fullFee)} series`);
+  if(c.dropEnabled) parts.push(`${fmt(c.dropFee)} drop-in`);
+  return parts.join("<br>") || `<span class="c-grey">&mdash;</span>`;
+}
+function activeRegs(c, type){ return c.regs.filter(r => r.status === "Active" && (!type || r.type === type)); }
+function sessionDropIns(c, sessionId){ return c.regs.filter(r => r.status === "Active" && r.type === "Drop-In" && r.sessionId === sessionId); }
+function balanceOf(r){
+  if(r.status !== "Active") return 0;
+  return (r.pay === "Paid" || r.pay === "No Payment Due" || r.pay === "Cancelled") ? 0 : r.amount;
+}
+function sessionById(c, id){ return c.sessions.find(s => s.id === id); }
+function firstChargeDate(c){ const ls = liveSessions(c); return ls.length ? addDays(ls[0].date, 1) : null; }
+
+// ---- Simulated profile navigation (live routes are not modeled here) ----
+function pLink(kind, name){ return `<a href="#" class="plink" data-kind="${kind}" data-name="${esc(name)}">${esc(name)}</a>`; }
+let toastTimer = null;
+function profileNav(kind, name){
+  const t = document.getElementById("nav-toast");
+  t.innerHTML = `<span class="sim-tag" style="margin:0 6px 0 0;">Simulated navigation</span>Opens the existing Staff ${kind === "student" ? "Student" : "Family"} Profile for <strong>${esc(name)}</strong>${kind === "family" ? " family" : ""}. That page is not built in this wireframe.`;
+  t.style.display = "block"; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.style.display = "none"; }, 5000);
+}
+document.addEventListener("click", e => { const a = e.target.closest("a.plink"); if(a){ e.preventDefault(); profileNav(a.dataset.kind, a.dataset.name); } });
+
+// ---- Class Image (simulated). Live file-type / size / dimension rules are intentionally not restated or modeled. ----
+const imgDraft = { af:null, ef:null };
+function sampleImg(label){
+  let h = 0; for(const ch of label) h = (h * 31 + ch.charCodeAt(0)) % 360;
+  const initials = label.split(/\s+/).filter(w => /^[A-Za-z]/.test(w)).slice(0,2).map(w => w[0].toUpperCase()).join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h},35%,28%)"/><stop offset="1" stop-color="hsl(${(h+50)%360},40%,14%)"/></linearGradient></defs><rect width="600" height="400" fill="url(#g)"/><text x="300" y="225" font-family="Georgia,serif" font-size="110" fill="#f2ead9" fill-opacity="0.85" text-anchor="middle">${initials}</text></svg>`;
+  return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+}
+function sameImg(a, b){ return (!a && !b) || (a && b && a.src === b.src && a.name === b.name); }
+function renderImgField(p){
+  const box = document.getElementById(p + "-img-preview"); if(!box) return;
+  const d = imgDraft[p];
+  const saved = p === "ef" ? (findClass(currentId).image || null) : null;
+  let label;
+  if(p === "ef"){
+    if(sameImg(d, saved)) label = d ? "Current image" : "No image assigned";
+    else if(d) label = "New image (preview, not saved yet)";
+    else label = "Image will be removed when you save";
+  } else label = d ? "Selected image (preview)" : "No image selected";
+  const pic = d ? (d.src ? `<img class="class-img" src="${d.src}" alt="Class image preview">` : `<div class="img-empty">${esc(d.name)}<br>Preview unavailable for this file type (simulated)</div>`) : `<div class="img-empty">No class image</div>`;
+  box.innerHTML = `<div class="img-label">${label}${d ? " &middot; " + esc(d.name) : ""}</div>${pic}`;
+  document.getElementById(p + "-img-remove").style.display = d ? "inline-block" : "none";
+  document.getElementById(p + "-img-remove").textContent = p === "ef" ? "Remove Image" : "Clear Selection";
+}
+function onImgFile(p, input){
+  const f = input.files[0];
+  if(!f){ return; }
+  imgDraft[p] = { name: f.name, src: (f.type || "").startsWith("image/") ? URL.createObjectURL(f) : null };
+  renderImgField(p);
+}
+function useSampleImg(p){
+  const nm = document.getElementById(p + "-name").value.trim() || "Class";
+  imgDraft[p] = { name: "sample-class-image.svg", src: sampleImg(nm), sample:true };
+  document.getElementById(p + "-img-file").value = "";
+  renderImgField(p);
+}
+function removeImg(p){ imgDraft[p] = null; document.getElementById(p + "-img-file").value = ""; renderImgField(p); }
+
+function toggleAccordion(id){ document.getElementById(id).classList.toggle("open"); }
+function showErr(id, msg){ const e = document.getElementById(id); e.textContent = msg || ""; e.style.display = msg ? "block" : "none"; }
+
+// Scheduling-conflict check across ALL classes. Two sessions conflict when they overlap in time on the
+// same date and share a room or an instructor. "Unassigned" never conflicts. Canceled sessions don't count.
+function findConflicts(excludeId, date, start, end, room, instructor){
+  const msgs = [];
+  classes.forEach(c => c.sessions.forEach(s => {
+    if(s.id === excludeId || s.status === "Canceled" || s.date !== date) return;
+    if(!(start < s.end && s.start < end)) return;
+    const when = `${longDate(s.date)} ${timeLabel(s.start)}–${timeLabel(s.end)}`;
+    if(room !== UNASSIGNED && s.room === room) msgs.push(`${room} is already in use by ${c.name} on ${when}.`);
+    if(instructor !== UNASSIGNED && s.instructor === instructor) msgs.push(`${instructor} is already scheduled for ${c.name} on ${when}.`);
+  }));
+  return msgs;
+}
+
+function optionList(list, current, includeUnassigned){
+  const items = includeUnassigned ? [UNASSIGNED].concat(list) : list;
+  return items.map(v => `<option${v === current ? " selected" : ""}>${esc(v)}</option>`).join("");
+}
+
+// ===================================================================
+// CLASSES LIST
+// ===================================================================
+let listState = { search:"", status:"Active", page:1, action:null, result:null };
+const LIST_PAGE_SIZE = 8;
+
+function applyClassFilters(){
+  listState.search = document.getElementById("cl-search").value.toLowerCase().trim();
+  listState.status = document.getElementById("cl-status").value;
+  listState.page = 1;
+  listState.action = null;
+  renderList();
+}
+document.getElementById("cl-search").addEventListener("keydown", e => { if(e.key === "Enter") applyClassFilters(); });
+
+function filteredClasses(){
+  const list = classes.filter(c => {
+    if(listState.search && !c.name.toLowerCase().includes(listState.search)) return false;
+    const st = classStatus(c);
+    if(listState.status === "Active") return isActiveClass(c);
+    if(listState.status !== "All" && st !== listState.status) return false;
+    return true;
+  });
+  // Sort after filtering (and before pagination): First Class date ascending, unscheduled last, ties by name
+  return list.sort((a, b) => {
+    const fa = firstSession(a), fb = firstSession(b);
+    if(fa && fb){ const d = fa.date.localeCompare(fb.date); if(d) return d; }
+    else if(fa) return -1; else if(fb) return 1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function classActionLinks(c){
+  const st = classStatus(c);
+  const links = [`<button class="action-link" onclick="openClass('${c.id}','overview',true)">Edit</button>`,
+                 `<button class="action-link" onclick="startClassAction('duplicate','${c.id}','list')">Duplicate</button>`];
+  if(st === "Complete" || st === "Canceled") links.push(`<button class="action-link" onclick="startClassAction('archive','${c.id}','list')">Archive</button>`);
+  if(st === "Archived") links.push(`<button class="action-link" onclick="startClassAction('unarchive','${c.id}','list')">Unarchive</button>`);
+  if(st === "Scheduled") links.push(`<button class="action-link rose" onclick="startClassAction('cancel','${c.id}','list')">Cancel</button>`);
+  return `<div class="c-actions">${links.join("")}</div>`;
+}
+
+function renderList(){
+  const list = document.getElementById("classes-list");
+  list.innerHTML = "";
+  const filtered = filteredClasses();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE));
+  if(listState.page > totalPages) listState.page = totalPages;
+  const start = (listState.page - 1) * LIST_PAGE_SIZE;
+
+  if(!filtered.length) list.innerHTML = `<div class="empty-row">No classes match these filters.</div>`;
+
+  filtered.slice(start, start + LIST_PAGE_SIZE).forEach(c => {
+    const row = document.createElement("div");
+    row.className = "row-grid grid-classes clickable";
+    row.tabIndex = 0; row.setAttribute("role", "link"); row.title = "Open class";
+    row.addEventListener("click", e => { if(e.target.closest("button, a, input, select, .assign-panel")) return; openClass(c.id); });
+    row.addEventListener("keydown", e => { if(e.target !== row) return; if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openClass(c.id); } });
+    row.innerHTML = `
+      <div class="c-name">${esc(c.name)}</div>
+      <div>${badge(classStatus(c))}</div>
+      <div class="c-dim">${scheduleText(c)}</div>
+      <div class="c-dim">${esc(c.room)}</div>
+      <div class="c-dim">${feeText(c)}</div>
+      ${classActionLinks(c)}`;
+    if(listState.action && listState.action.id === c.id) row.appendChild(buildActionPanel(c, listState.action.kind, "list"));
+    list.appendChild(row);
+  });
+
+  const total = filtered.length;
+  document.getElementById("classes-count-label").textContent = total === 0 ? "No classes match these filters."
+    : `Showing ${start + 1}–${Math.min(start + LIST_PAGE_SIZE, total)} of ${total}`;
+
+  const pb = document.getElementById("classes-page-buttons");
+  pb.innerHTML = "";
+  const mk = (txt, dis, fn, cur) => { const b = document.createElement("button"); b.textContent = txt; b.disabled = dis; if(cur) b.classList.add("current"); b.addEventListener("click", fn); pb.appendChild(b); };
+  mk("Previous", listState.page <= 1, () => { listState.page--; renderList(); });
+  for(let p = 1; p <= totalPages; p++) mk(p, false, () => { listState.page = p; renderList(); }, p === listState.page);
+  mk("Next", listState.page >= totalPages, () => { listState.page++; renderList(); });
+
+  const n = document.getElementById("list-notice");
+  n.innerHTML = "";
+  if(listState.result){
+    const r = listState.result;
+    n.innerHTML = `<div class="result-panel" style="margin:0 0 16px; border-color:var(--line);">
+      <div class="result-title" style="color:var(--green);">${esc(r.title)}</div>
+      <div class="result-line">${r.msg}</div>
+      ${r.openId ? `<div class="assign-panel-actions" style="margin-top:10px;"><button class="btn small primary" onclick="openClass('${r.openId}')">Open Class</button><button class="btn small" onclick="listState.result=null; renderList();">Dismiss</button></div>` : `<div class="assign-panel-actions" style="margin-top:10px;"><button class="btn small" onclick="listState.result=null; renderList();">Dismiss</button></div>`}
+    </div>`;
+  }
+}
+
+// ----- Class-level actions (Duplicate / Archive / Unarchive / Cancel) shared by list rows and detail header -----
+let detailAction = null;
+
+function startClassAction(kind, id, from){
+  if(from === "list"){ listState.action = { kind, id }; renderList(); }
+  else { detailAction = { kind, id }; renderDetailHeader(); }
+}
+function cancelClassAction(from){
+  if(from === "list"){ listState.action = null; renderList(); } else { detailAction = null; renderDetailHeader(); }
+}
+function classImpact(c){
+  const regs = activeRegs(c);
+  const unpaid = regs.filter(r => balanceOf(r) > 0);
+  const paid = regs.filter(r => r.pay === "Paid");
+  const futureSessions = c.sessions.filter(s => s.status === "Scheduled" && s.date >= TODAY);
+  return { regs, unpaid, paid, futureSessions, unpaidTotal: unpaid.reduce((s,r) => s + r.amount, 0), paidTotal: paid.reduce((s,r) => s + r.amount, 0) };
+}
+
+function buildActionPanel(c, kind, from){
+  const panel = document.createElement("div");
+  panel.className = "assign-panel";
+  const cancelBtn = `<button class="btn small" onclick="cancelClassAction('${from}')">Keep As Is</button>`;
+  let inner = "";
+  if(kind === "duplicate"){
+    inner = `<div class="result-panel" style="border-color:var(--line);">
+      <div class="result-title" style="color:var(--cream-dim);">Duplicate Class</div>
+      <div class="result-line">Creates <strong>${esc(c.name)} (Copy)</strong> with the same description, room, instructor, capacity and fees. Registrations, sessions and content are not copied. Add the new dates in the Schedule tab.</div>
+      <div class="assign-panel-actions" style="margin-top:12px;"><button class="btn primary small" onclick="confirmClassAction('duplicate','${c.id}','${from}')">Duplicate Class</button>${cancelBtn}</div></div>`;
+  } else if(kind === "archive"){
+    inner = `<div class="result-panel" style="border-color:var(--line);">
+      <div class="result-title" style="color:var(--cream-dim);">Archive Class</div>
+      <div class="result-line">Archiving moves <strong>${esc(c.name)}</strong> to the Archived filter. Registrations and history are kept, and it can be unarchived. Only Complete or Canceled classes can be archived.</div>
+      <div class="assign-panel-actions" style="margin-top:12px;"><button class="btn primary small" onclick="confirmClassAction('archive','${c.id}','${from}')">Archive Class</button>${cancelBtn}</div></div>`;
+  } else if(kind === "unarchive"){
+    inner = `<div class="result-panel" style="border-color:var(--line);">
+      <div class="result-title" style="color:var(--cream-dim);">Unarchive Class</div>
+      <div class="result-line">Restores <strong>${esc(c.name)}</strong> to its previous status.</div>
+      <div class="assign-panel-actions" style="margin-top:12px;"><button class="btn primary small" onclick="confirmClassAction('unarchive','${c.id}','${from}')">Unarchive</button>${cancelBtn}</div></div>`;
+  } else {
+    const im = classImpact(c);
+    inner = `<div class="result-panel" style="border-color:var(--rose);">
+      <div class="result-title" style="color:var(--rose);">Cancel Class</div>
+      <div class="kv-row"><span class="k">Class</span><span class="v">${esc(c.name)}</span></div>
+      <div class="kv-row"><span class="k">Active registrations</span><span class="v">${im.regs.length}</span></div>
+      <div class="kv-row"><span class="k">Upcoming sessions</span><span class="v">${im.futureSessions.length} will be canceled</span></div>
+      <div class="result-line" style="margin-top:14px; color:var(--cream);">${im.unpaid.length ? `${im.unpaid.length} unpaid charge${im.unpaid.length===1?"":"s"} (${fmt(im.unpaidTotal)}) will be canceled.` : `There are no unpaid charges to cancel.`}
+        ${im.paid.length ? ` ${fmt(im.paidTotal)} already collected from ${im.paid.length} registration${im.paid.length===1?"":"s"} is <strong>not</strong> refunded automatically &mdash; refunds are handled separately through Billing.` : ``}</div>
+      <div class="result-line" style="color:var(--grey); margin-top:8px;">The roster and history are kept for reference. Canceling ends the class for everyone; to remove one student, use Withdraw on the Roster tab instead.</div>
+      <div class="assign-panel-actions" style="margin-top:14px;"><button class="btn danger small" onclick="confirmClassAction('cancel','${c.id}','${from}')">Cancel Class</button>${cancelBtn}</div></div>`;
+  }
+  panel.innerHTML = inner;
+  return panel;
+}
+
+function confirmClassAction(kind, id, from){
+  const c = findClass(id);
+  let result = null;
+  if(kind === "duplicate"){
+    const copy = mkClass({ name: c.name + " (Copy)", description:c.description, room:c.room, instructor:c.instructor, capacity:c.capacity, dropCapacity:c.dropCapacity,
+      fullEnabled:c.fullEnabled, fullFee:c.fullFee, dropEnabled:c.dropEnabled, dropFee:c.dropFee, defStart:c.defStart, defEnd:c.defEnd });
+    classes.unshift(copy);
+    result = { title:"Class Duplicated", msg:`<strong>${esc(copy.name)}</strong> was created with no sessions yet. Add its dates in the Schedule tab.`, openId: copy.id };
+    listState.status = "Active"; document.getElementById("cl-status").value = "Active"; listState.search = ""; document.getElementById("cl-search").value = ""; listState.page = 1;
+  } else if(kind === "archive"){
+    c.prevState = c.state; c.state = "Archived";
+    result = { title:"Class Archived", msg:`<strong>${esc(c.name)}</strong> was archived. Find it under the Archived status filter.` };
+  } else if(kind === "unarchive"){
+    c.state = c.prevState; c.prevState = null;
+    result = { title:"Class Restored", msg:`<strong>${esc(c.name)}</strong> was unarchived and is now ${esc(classStatus(c))}.` };
+  } else {
+    const im = classImpact(c);
+    c.state = "Canceled";
+    c.sessions.forEach(s => { if(s.status === "Scheduled" && s.date >= TODAY) s.status = "Canceled"; });
+    im.unpaid.forEach(r => { r.pay = "Cancelled"; });
+    im.regs.forEach(r => { r.status = "Class Canceled"; });
+    result = { title:"Class Canceled", msg:`<strong>${esc(c.name)}</strong> was canceled. ${im.unpaid.length} unpaid charge${im.unpaid.length===1?"":"s"} canceled; no Stripe activity occurred in this wireframe. ${im.paid.length ? "Collected payments were not refunded automatically." : ""}` };
+  }
+  listState.action = null; detailAction = null;
+  if(from === "list"){ listState.result = result; renderList(); }
+  else {
+    if(kind === "duplicate"){ listState.result = result; showList(); return; }
+    renderDetail();
+    document.getElementById("d-action-panel").innerHTML = `<div class="result-panel" style="border-color:var(--line); margin:0 0 20px;"><div class="result-title" style="color:var(--green);">${esc(result.title)}</div><div class="result-line">${result.msg}</div></div>`;
+  }
+}
+
+// ===================================================================
+// CLASS FORM (Add Class + Overview edit)
+// ===================================================================
+function classFormHtml(p, c){
+  const isAdd = !c;
+  const v = c || { name:"", description:"", room:UNASSIGNED, instructor:UNASSIGNED, capacity:12, dropCapacity:6, fullEnabled:true, fullFee:"", dropEnabled:true, dropFee:"" };
+  return `
+    <div class="field" style="margin-top:14px;"><label>Class Name</label><input type="text" id="${p}-name" value="${esc(v.name)}" placeholder="e.g. Fly Like a Dragon"></div>
+    <div class="field"><label>Description</label><textarea id="${p}-desc">${esc(v.description)}</textarea></div>
+    <div class="field">
+      <label>Class Image</label>
+      <div class="img-slot" id="${p}-img-preview"></div>
+      <input type="file" id="${p}-img-file" onchange="onImgFile('${p}', this)">
+      <div style="display:flex; gap:12px; margin-top:10px; flex-wrap:wrap; align-items:center;">
+        <button class="btn small" type="button" onclick="useSampleImg('${p}')">Use sample image (demo)</button>
+        <button class="btn small danger" type="button" id="${p}-img-remove" onclick="removeImg('${p}')" style="display:none;">Remove Image</button>
+        <span class="sim-tag" style="margin:0;">Simulated &mdash; nothing is uploaded or stored</span>
+      </div>
+      <div class="field-hint">Shown on the public website. Separate from files added in the Content tab. Accepted file types, dimensions, aspect ratio, file size limits and validation follow the live Classes image rules, which are not restated or modeled here.</div>
+    </div>
+    ${isAdd ? `
+    <div class="field-row">
+      <div class="field"><label>First Class Date</label><input type="date" id="${p}-start-date"></div>
+      <div class="field"><label>Last Class Date</label><input type="date" id="${p}-end-date"></div>
+      <div class="field"><label>Start Time</label><input type="time" id="${p}-start-time"></div>
+      <div class="field"><label>End Time</label><input type="time" id="${p}-end-time"></div>
+    </div>
+    <div class="field-hint" style="margin:-8px 0 16px;">Creates one weekly session on the weekday of the first date, through the last date (up to 52). Individual sessions can be edited afterward in the Schedule tab.</div>` : ``}
+    <div class="field-row">
+      <div class="field"><label>Room</label><select id="${p}-room">${optionList(ROOMS, v.room, true)}</select></div>
+      <div class="field"><label>Instructor</label><select id="${p}-instructor">${optionList(INSTRUCTORS, v.instructor, true)}</select></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Series Capacity</label><input type="text" id="${p}-capacity" value="${v.capacity}"></div>
+      <div class="field"><label>Drop-in Capacity (per session)</label><input type="text" id="${p}-dropcap" value="${v.dropCapacity}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="check-row"><input type="checkbox" id="${p}-full-on" ${v.fullEnabled ? "checked" : ""}> Full Series registration</label>
+        <label style="margin-top:8px;">Full Series Fee ($)</label><input type="text" id="${p}-full-fee" value="${v.fullFee === "" ? "" : Number(v.fullFee).toFixed(2)}"></div>
+      <div class="field"><label class="check-row"><input type="checkbox" id="${p}-drop-on" ${v.dropEnabled ? "checked" : ""}> Drop-In registration</label>
+        <label style="margin-top:8px;">Drop-in Fee ($)</label><input type="text" id="${p}-drop-fee" value="${v.dropFee === "" ? "" : Number(v.dropFee).toFixed(2)}"></div>
+    </div>
+    ${isAdd ? `<label class="check-row"><input type="checkbox" id="${p}-override"> Override scheduling conflicts</label>` : ``}
+    <div class="form-error" id="${p}-error"></div>
+    <div class="assign-panel-actions" style="margin-top:0;">
+      <button class="btn primary" onclick="${isAdd ? "submitAddClass()" : "saveClassEdits()"}">${isAdd ? "Create Class" : "Save Changes"}</button>
+      ${isAdd ? `<button class="btn" onclick="cancelAddClass()">Cancel</button>` : `<button class="btn" onclick="closeEdit()">Close</button>`}
+    </div>
+    <div id="${p}-result"></div>`;
+}
+
+function readClassForm(p, needSchedule){
+  const g = id => document.getElementById(`${p}-${id}`);
+  const out = { name: g("name").value.trim(), description: g("desc").value.trim(), room: g("room").value, instructor: g("instructor").value };
+  const cap = parseInt(g("capacity").value), dcap = parseInt(g("dropcap").value);
+  out.fullEnabled = g("full-on").checked; out.dropEnabled = g("drop-on").checked;
+  const ff = parseFloat(g("full-fee").value), df = parseFloat(g("drop-fee").value);
+  let err = "";
+  if(!out.name) err = "Enter a class name.";
+  else if(isNaN(cap) || cap < 1) err = "Series capacity must be at least 1.";
+  else if(isNaN(dcap) || dcap < 0) err = "Drop-in capacity must be 0 or more.";
+  else if(!out.fullEnabled && !out.dropEnabled) err = "Enable Full Series, Drop-In, or both.";
+  else if(out.fullEnabled && (isNaN(ff) || ff < 0)) err = "Enter a valid Full Series fee.";
+  else if(out.dropEnabled && (isNaN(df) || df < 0)) err = "Enter a valid Drop-in fee.";
+  out.capacity = cap; out.dropCapacity = dcap; out.fullFee = out.fullEnabled ? ff : 0; out.dropFee = out.dropEnabled ? df : 0;
+  if(needSchedule && !err){
+    out.startDate = g("start-date").value; out.endDate = g("end-date").value; out.startTime = g("start-time").value; out.endTime = g("end-time").value;
+    if(!out.startDate || !out.endDate || !out.startTime || !out.endTime) err = "Enter the first and last class dates and start and end times.";
+    else if(out.endDate < out.startDate) err = "The last class date must be on or after the first class date.";
+    else if(out.endTime <= out.startTime) err = "End time must be after start time.";
+  }
+  return { out, err };
+}
+
+function submitAddClass(){
+  const { out, err } = readClassForm("af", true);
+  if(err){ showErr("af-error", err); return; }
+  const dates = weeklyDates(out.startDate, out.endDate);
+  if(weeklyDates(out.startDate, "9999-12-31").length && dates.length === 52 && addDays(dates[51], 7) <= out.endDate){
+    showErr("af-error", "A class can have up to 52 sessions created at once. Choose an earlier last date."); return;
+  }
+  const conflicts = [];
+  dates.forEach(d => findConflicts(null, d, out.startTime, out.endTime, out.room, out.instructor).forEach(m => conflicts.push(m)));
+  const override = document.getElementById("af-override").checked;
+  if(conflicts.length && !override){
+    const uniq = [...new Set(conflicts)];
+    showErr("af-error", `Scheduling conflict, so the class was not created. ${uniq.slice(0,3).join(" ")}${uniq.length > 3 ? ` (+${uniq.length-3} more)` : ""} Check Override scheduling conflicts to create it anyway.`);
+    return;
+  }
+  showErr("af-error", "");
+  const c = mkClass({ name:out.name, description:out.description, room:out.room, instructor:out.instructor, capacity:out.capacity, dropCapacity:out.dropCapacity,
+    fullEnabled:out.fullEnabled, fullFee:out.fullFee, dropEnabled:out.dropEnabled, dropFee:out.dropFee, defStart:out.startTime, defEnd:out.endTime }, out.startDate, out.endDate);
+  c.image = imgDraft.af;
+  classes.unshift(c);
+  listState.status = "Active"; listState.search = ""; listState.page = 1;
+  document.getElementById("cl-status").value = "Active"; document.getElementById("cl-search").value = "";
+  resetAddForm();
+  document.getElementById("af-result").innerHTML = `<div class="result-panel" style="border-color:var(--line);"><div class="result-title" style="color:var(--green);">Class Created</div>
+    <div class="result-line"><strong>${esc(c.name)}</strong> &middot; ${c.sessions.length} weekly session${c.sessions.length===1?"":"s"} created${conflicts.length ? " (with a scheduling conflict override)" : ""}.</div></div>`;
+  renderList();
+}
+
+function resetAddForm(){
+  document.getElementById("add-class-form-wrap").innerHTML = classFormHtml("af", null);
+  imgDraft.af = null; renderImgField("af");
+}
+function cancelAddClass(){
+  resetAddForm();                                           // clears values, errors, override and image selection
+  document.getElementById("acc-add-class").classList.remove("open");
+  window.scrollTo(0, 0);
+}
+
+function saveClassEdits(){
+  const c = findClass(currentId);
+  const { out, err } = readClassForm("ef", false);
+  if(err){ showErr("ef-error", err); return; }
+  const full = activeRegs(c, "Full Series").length;
+  if(out.capacity < full){ showErr("ef-error", `Series capacity can't be lower than the ${full} students already registered. Withdraw students first.`); return; }
+  ["name","description","room","instructor","capacity","dropCapacity","fullEnabled","fullFee","dropEnabled","dropFee"].forEach(k => { c[k] = out[k]; });
+  c.image = imgDraft.ef;
+  renderDetail();
+  document.getElementById("ov-edit").innerHTML = `<div class="result-panel" style="border-color:var(--line);"><div class="result-title" style="color:var(--green);">Class Updated</div>
+    <div class="result-line">Changes apply to future registrations. Existing registrations keep the price they were created with. Session dates and times are managed in the Schedule tab.</div></div>`;
+}
+function openEdit(){
+  const c = findClass(currentId);
+  document.getElementById("ov-edit").innerHTML = `<div class="accordion open" style="margin-top:22px;"><div class="accordion-header" style="cursor:default;"><div class="accordion-title">Edit Class</div></div><div class="accordion-body">${classFormHtml("ef", c)}</div></div>`;
+  imgDraft.ef = c.image ? Object.assign({}, c.image) : null; renderImgField("ef");
+}
+function closeEdit(){ document.getElementById("ov-edit").innerHTML = ""; }
+
+// ===================================================================
+// DETAIL VIEW
+// ===================================================================
+let currentId = null, currentTab = "overview";
+
+function showList(){
+  document.getElementById("view-detail").style.display = "none";
+  document.getElementById("view-list").style.display = "block";
+  detailAction = null; listState.action = null;
+  renderList();
+}
+function openClass(id, tab, edit){
+  currentId = id;
+  detailAction = null;
+  document.getElementById("view-list").style.display = "none";
+  document.getElementById("view-detail").style.display = "block";
+  resetDetailForms();
+  setTab(tab || "overview");
+  renderDetail();
+  if(edit) openEdit();
+  window.scrollTo(0, 0);
+}
+function setTab(t){
+  if(t === "roster" && currentTab !== "roster" && currentId){ resetRosterFilters(); if(findClass(currentId)){ withdrawResult = null; renderRoster(); } }
+  currentTab = t;
+  document.querySelectorAll("#detail-tabs .tab").forEach(x => x.classList.toggle("active", x.dataset.tab === t));
+  document.querySelectorAll("#view-detail .panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + t));
+}
+document.querySelectorAll("#detail-tabs .tab").forEach(tab => tab.addEventListener("click", () => setTab(tab.dataset.tab)));
+
+function renderDetailHeader(){
+  const c = findClass(currentId);
+  const st = classStatus(c);
+  document.getElementById("d-title").textContent = c.name;
+  document.getElementById("d-status-badge").innerHTML = badge(st);
+  document.getElementById("d-sub").textContent = `${liveSessions(c).length} session${liveSessions(c).length === 1 ? "" : "s"}`;
+  document.getElementById("d-btn-duplicate").disabled = false;
+  document.getElementById("d-btn-archive").disabled = !(st === "Complete" || st === "Canceled");
+  document.getElementById("d-btn-archive").textContent = st === "Archived" ? "Archived" : "Archive";
+  document.getElementById("d-btn-cancel").disabled = !(st === "Scheduled");
+  const slot = document.getElementById("d-action-panel");
+  slot.innerHTML = "";
+  if(detailAction){ const wrap = document.createElement("div"); wrap.style.marginBottom = "20px"; wrap.appendChild(buildActionPanel(c, detailAction.kind, "detail")); wrap.firstChild.style.borderTop = "none"; wrap.firstChild.style.marginTop = "0"; wrap.firstChild.style.paddingTop = "0"; slot.appendChild(wrap); }
+}
+
+function renderDetail(){
+  renderDetailHeader();
+  renderOverview();
+  renderRosterStats();
+  renderRoster();
+  renderSchedule();
+  renderContent();
+  refreshAddStudentForm();
+  refreshAddEventDefaults();
+}
+
+function renderOverview(){
+  const c = findClass(currentId);
+  const ls = liveSessions(c);
+  const first = ls[0], last = ls[ls.length-1];
+  const img = c.image ? (c.image.src ? `<img class="class-img" src="${c.image.src}" alt="Class image">` : `<div class="img-empty">${esc(c.image.name)}<br>Preview unavailable (simulated)</div>`) : `<div class="img-empty">No class image</div>`;
+  document.getElementById("ov-summary").innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;"><h2>Overview</h2><button class="btn" onclick="openEdit()">Edit Class</button></div>
+    <div class="ov-top">
+      <div>${img}${c.image ? `<div class="field-hint">${esc(c.image.name)} &middot; public website image</div>` : ``}</div>
+      <div class="desc-block">${c.description ? esc(c.description) : `<span class="c-grey">No description.</span>`}</div>
+    </div>
+    <div style="max-width:760px;">
+      <div class="kv-row"><span class="k">Status</span><span class="v">${badge(classStatus(c))}</span></div>
+      <div class="kv-row"><span class="k">Schedule</span><span class="v">${ls.length ? `${dayName(first.date)}s &middot; ${longDate(first.date)}${ls.length>1 ? " – " + longDate(last.date) : ""} &middot; ${timeLabel(first.start)}–${timeLabel(first.end)}` : "No sessions scheduled"}</span></div>
+      <div class="kv-row"><span class="k">Sessions</span><span class="v">${ls.length} scheduled${c.sessions.length !== ls.length ? `, ${c.sessions.length - ls.length} canceled` : ""}</span></div>
+      <div class="kv-row"><span class="k">Room</span><span class="v">${esc(c.room)}</span></div>
+      <div class="kv-row"><span class="k">Instructor</span><span class="v">${esc(c.instructor)}</span></div>
+      <div class="kv-row"><span class="k">Full Series</span><span class="v">${c.fullEnabled ? `${fmt(c.fullFee)} &middot; capacity ${c.capacity}` : "Not offered"}</span></div>
+      <div class="kv-row"><span class="k">Drop-In</span><span class="v">${c.dropEnabled ? `${fmt(c.dropFee)} per class &middot; capacity ${c.dropCapacity} per session` : "Not offered"}</span></div>
+    </div>`;
+}
+
+// ===================================================================
+// ROSTER
+// ===================================================================
+let withdrawPanel = null;    // { regId, from:'roster'|'session' }
+let withdrawResult = null;   // { regId, msg }
+let rosterAddResult = null;
+
+function renderRosterStats(){
+  const c = findClass(currentId);
+  document.getElementById("roster-stats").innerHTML =
+    `Full Series registered: <strong>${activeRegs(c,"Full Series").length}</strong> of ${c.capacity} &nbsp;&middot;&nbsp; Drop-In capacity is counted per session date (see Drop-In Registrations below)`;
+}
+
+function withdrawPanelHtml(c, r, scope){
+  const paid = r.pay === "Paid";
+  const what = r.type === "Full Series" ? "Full Series registration" : `Drop-In for ${longDate(sessionById(c, r.sessionId).date)}`;
+  return `<div class="result-panel" style="border-color:var(--rose);">
+    <div class="result-title" style="color:var(--rose);">Withdraw Student</div>
+    <div class="kv-row"><span class="k">Student</span><span class="v">${esc(r.student)}</span></div>
+    <div class="kv-row"><span class="k">Registration</span><span class="v">${esc(what)}</span></div>
+    <div class="kv-row"><span class="k">Amount</span><span class="v">${fmt(r.amount)} &middot; ${esc(r.pay)}</span></div>
+    <div class="result-line" style="margin-top:14px; color:var(--cream);">${paid
+      ? `${fmt(r.amount)} has already been collected. Withdrawing will not automatically refund it &mdash; refunds are handled separately through Billing.`
+      : r.pay === "No Payment Due" ? `No payment was due for this registration, so nothing needs to be canceled.`
+      : `Withdrawing will cancel the ${fmt(r.amount)} charge for ${esc(r.student)}. No payment will be attempted.`}</div>
+    <div class="result-line" style="color:var(--grey); margin-top:8px;">${r.type === "Full Series" ? "The whole Full Series participation ends: the student is removed from every session roster for this class." : "Only this date's participation ends; the student's other registrations for this class are unchanged."} The registration stays in the list as Withdrawn for history.</div>
+    <div class="assign-panel-actions" style="margin-top:14px;">
+      <button class="btn danger small" onclick="confirmWithdraw('${r.id}')">Withdraw</button>
+      <button class="btn small" onclick="cancelWithdraw()">Keep Registered</button>
+    </div></div>`;
+}
+function startWithdraw(regId){ withdrawPanel = { regId }; withdrawResult = null; renderRoster(); }
+function cancelWithdraw(){ withdrawPanel = null; renderRoster(); }
+function confirmWithdraw(regId){
+  const c = findClass(currentId);
+  const r = c.regs.find(x => x.id === regId);
+  if(!r || r.status !== "Active") return;           // a withdrawn registration can't be withdrawn again
+  const wasPaid = r.pay === "Paid";
+  r.status = "Withdrawn";
+  if(!wasPaid && r.pay !== "No Payment Due") r.pay = "Cancelled";
+  withdrawPanel = null;
+  withdrawResult = { regId, msg: wasPaid ? `${esc(r.student)} was withdrawn. The ${fmt(r.amount)} payment was not refunded automatically.` : `${esc(r.student)} was withdrawn and the unpaid charge was canceled.` };
+  renderRosterStats(); renderRoster(); renderSchedule(); renderDetailHeader(); refreshAddStudentForm();
+}
+
+function regRow(c, r, drop){
+  const row = document.createElement("div");
+  row.className = `row-grid ${drop ? "grid-drop" : "grid-full"}${r.status !== "Active" ? " muted" : ""}`;
+  row.innerHTML = `
+    <div class="c-name">${pLink("student", r.student)}</div>
+    <div class="c-dim">${pLink("family", r.family)}</div>
+    <div>${badge(r.status)}</div>
+    <div class="c-actions">${r.status === "Active" ? `<button class="action-link rose" onclick="startWithdraw('${r.id}')">Withdraw</button>` : `<span class="c-grey">&mdash;</span>`}</div>`;
+  if(withdrawPanel && withdrawPanel.regId === r.id){
+    const p = document.createElement("div"); p.className = "assign-panel"; p.innerHTML = withdrawPanelHtml(c, r, "roster"); row.appendChild(p);
+  }
+  if(withdrawResult && withdrawResult.regId === r.id){
+    const p = document.createElement("div"); p.className = "assign-panel";
+    p.innerHTML = `<div class="result-panel" style="border-color:var(--line);"><div class="result-title" style="color:var(--rose);">Student Withdrawn</div><div class="result-line">${withdrawResult.msg}</div></div>`;
+    row.appendChild(p);
+  }
+  return row;
+}
+
+let dropSel = null;   // selected session id for the Drop-In roster
+// Independent roster status filters ("Active" = currently enrolled only, "All" = also withdrawn/canceled history). Counts always use active registrations.
+function resetRosterFilters(){
+  document.getElementById("full-status").value = "Active"; document.getElementById("drop-status").value = "Active";
+}
+function onRosterFilterChange(){ withdrawResult = null; renderRoster(); }
+function defaultDropSession(c){
+  const all = c.sessions.slice().sort((a,b) => a.date.localeCompare(b.date));
+  if(!all.length) return null;
+  const next = all.find(s => s.date >= TODAY && s.status !== "Canceled");
+  return (next || all[all.length-1]).id;
+}
+function onDropSessionChange(){ dropSel = document.getElementById("drop-session").value; withdrawPanel = null; withdrawResult = null; renderRoster(); }
+function renderRoster(){
+  const c = findClass(currentId);
+  const fullList = document.getElementById("roster-full"), dropList = document.getElementById("roster-drop");
+  fullList.innerHTML = ""; dropList.innerHTML = "";
+  const fullAll = c.regs.filter(r => r.type === "Full Series");
+  const fullActiveOnly = document.getElementById("full-status").value === "Active";
+  const full = fullActiveOnly ? fullAll.filter(r => r.status === "Active") : fullAll;
+  if(!full.length) fullList.innerHTML = `<div class="empty-row">${fullAll.length ? `No active Full Series registrations. Set Status to All to see ${fullAll.length} withdrawn or canceled registration${fullAll.length === 1 ? "" : "s"}.` : "No Full Series registrations."}</div>`;
+  full.forEach(r => fullList.appendChild(regRow(c, r, false)));
+  const wnote = (type, list) => (withdrawResult && !list.some(r => r.id === withdrawResult.regId) && (c.regs.find(r => r.id === withdrawResult.regId) || {}).type === type)
+    ? `<div class="result-panel" style="border-color:var(--line); margin:0 0 12px;"><div class="result-title" style="color:var(--rose);">Student Withdrawn</div><div class="result-line">${withdrawResult.msg}</div><div class="result-line c-grey" style="font-size:12px;">The registration is kept as Withdrawn history. Set Status to All to see it.</div></div>` : "";
+  document.getElementById("full-notice").innerHTML = wnote("Full Series", full);
+
+  // Drop-In roster for the selected session date
+  const sel = document.getElementById("drop-session");
+  const all = c.sessions.slice().sort((a,b) => a.date.localeCompare(b.date));
+  if(!dropSel || !sessionById(c, dropSel)) dropSel = defaultDropSession(c);
+  sel.innerHTML = all.length ? all.map(x => `<option value="${x.id}"${x.id === dropSel ? " selected" : ""}>${longDate(x.date)}${x.date < TODAY ? " (past)" : ""}${x.status === "Canceled" ? " (Canceled)" : ""}${x.dropIn ? "" : " (no drop-in)"}</option>`).join("") : `<option value="">No sessions</option>`;
+  sel.disabled = !all.length;
+  const s = dropSel ? sessionById(c, dropSel) : null;
+  const countEl = document.getElementById("drop-count");
+  if(s){
+    const n = sessionDropIns(c, s.id).length, cap = s.dropCap != null ? s.dropCap : c.dropCapacity;
+    countEl.innerHTML = s.dropIn ? `<strong>${n}</strong> of ${cap} drop-in spots filled for ${longDate(s.date)}${n > cap ? ` <span class="c-grey">(over capacity by staff override)</span>` : ``}` : `Drop-in is not offered for ${longDate(s.date)}`;
+  } else countEl.textContent = "";
+  const dropsAll = s ? c.regs.filter(r => r.type === "Drop-In" && r.sessionId === s.id) : [];
+  const dropActiveOnly = document.getElementById("drop-status").value === "Active";
+  const drops = dropActiveOnly ? dropsAll.filter(r => r.status === "Active") : dropsAll;
+  if(!drops.length) dropList.innerHTML = `<div class="empty-row">${!s ? "No sessions to show." : dropsAll.length ? `No active Drop-In students for ${longDate(s.date)}. Set Status to All to see ${dropsAll.length} withdrawn or canceled registration${dropsAll.length === 1 ? "" : "s"}.` : `No Drop-In students are registered for ${longDate(s.date)}.`}</div>`;
+  drops.forEach(r => dropList.appendChild(regRow(c, r, true)));
+  document.getElementById("drop-notice").innerHTML = wnote("Drop-In", drops);
+}
+
+// ---- Add Student (staff) ----
+function eligibleDropInSessions(c){
+  return liveSessions(c).filter(s => s.dropIn && s.status === "Scheduled" && s.date >= TODAY);
+}
+function refreshAddStudentForm(){
+  const c = findClass(currentId);
+  const prevStudent = document.getElementById("rs-student").value;
+  document.getElementById("rs-student").innerHTML = STUDENTS.map(s => `<option value="${esc(s.name)}"${s.name === prevStudent ? " selected" : ""}>${esc(s.name)} (${esc(s.family)})</option>`).join("");
+  const types = []; if(c.fullEnabled) types.push("Full Series"); if(c.dropEnabled) types.push("Drop-In");
+  const sel = document.getElementById("rs-type"); const prevType = sel.value;
+  sel.innerHTML = types.map(t => `<option${t === prevType ? " selected" : ""}>${t}</option>`).join("");
+  onRosterTypeChange();
+}
+function onRosterTypeChange(){
+  const c = findClass(currentId);
+  const type = document.getElementById("rs-type").value;
+  const dateField = document.getElementById("rs-date-field");
+  if(type === "Drop-In"){
+    dateField.style.display = "block";
+    const prev = document.getElementById("rs-date").value;
+    const ses = eligibleDropInSessions(c);
+    document.getElementById("rs-date").innerHTML = ses.length
+      ? ses.map(s => `<option value="${s.id}"${s.id === prev ? " selected" : ""}>${longDate(s.date)} — ${fmt(s.dropPrice)}</option>`).join("")
+      : `<option value="">No upcoming drop-in sessions</option>`;
+    document.getElementById("rs-type-detail").textContent = `Drop-In: one charge per class date (${fmt(c.dropFee)} default).`;
+  } else {
+    dateField.style.display = "none";
+    const first = firstChargeDate(c);
+    document.getElementById("rs-type-detail").textContent = `Full Series: ${fmt(c.fullFee)}, one charge for all ${liveSessions(c).length} sessions.`;
+  }
+}
+
+function validateCode(code, c, base){
+  const def = DEMO_CODES[code];
+  if(!def) return { ok:false, msg:`"${code}" isn't a valid discount code.` };
+  if(def.expired) return { ok:false, msg:`${code} has expired.` };
+  if(def.appliesTo === "Production") return { ok:false, msg:`${code} is only valid for Productions and can't be applied to a class.` };
+  if(def.appliesTo !== "any" && def.appliesTo !== c.name) return { ok:false, msg:`${code} is only valid for ${def.appliesTo}, so it does not apply to ${c.name}.` };
+  const off = def.type === "percent" ? Math.round(base * def.amount) / 100 : Math.min(base, def.amount);
+  return { ok:true, off, label: def.type === "percent" ? `${def.amount}% off` : `${fmt(def.amount)} off` };
+}
+
+function submitAddStudent(){
+  const c = findClass(currentId);
+  const st = classStatus(c);
+  const student = document.getElementById("rs-student").value;
+  const type = document.getElementById("rs-type").value;
+  const code = document.getElementById("rs-code").value.trim().toUpperCase();
+  const override = document.getElementById("rs-override").checked;
+  rosterAddResult = null; document.getElementById("rs-result").innerHTML = "";
+  const fail = m => showErr("rs-error", m);
+  showErr("rs-error", "");
+
+  if(st === "Canceled" || st === "Archived" || st === "Complete"){ return fail(`This class is ${st}, so students can't be added.`); }
+  if(!student || !type){ return fail("Choose a student and a registration type."); }
+  const rec = STUDENTS.find(s => s.name === student);
+  const hasFull = c.regs.some(r => r.status === "Active" && r.student === student && r.type === "Full Series");
+
+  let session = null, base;
+  if(type === "Full Series"){
+    if(hasFull) return fail(`${student} is already registered for the Full Series.`);
+    if(activeRegs(c, "Full Series").length >= c.capacity && !override) return fail(`This class is at capacity (${c.capacity} of ${c.capacity} series spots). Check Override capacity to add the student anyway.`);
+    base = c.fullFee;
+  } else {
+    const sid = document.getElementById("rs-date").value;
+    session = sid ? sessionById(c, sid) : null;
+    if(!session) return fail("Choose a class date for the Drop-In.");
+    if(hasFull) return fail(`${student} already has a Full Series for this class, so a Drop-In isn't needed.`);
+    if(sessionDropIns(c, session.id).some(r => r.student === student)) return fail(`${student} is already registered as a Drop-In for ${longDate(session.date)}.`);
+    const cap = session.dropCap != null ? session.dropCap : c.dropCapacity;
+    if(sessionDropIns(c, session.id).length >= cap && !override) return fail(`${longDate(session.date)} is at drop-in capacity (${cap} of ${cap}). Check Override capacity to add the student anyway.`);
+    base = session.dropPrice;
+  }
+
+  let amount = base, discountLine = "";
+  if(code){
+    const v = validateCode(code, c, base);
+    if(!v.ok) return fail(v.msg);
+    amount = Math.max(0, Math.round((base - v.off) * 100) / 100);
+    discountLine = `<div class="result-line">${esc(code)} applied: ${v.label} (&minus;${fmt(v.off)} from ${fmt(base)})</div>`;
+  }
+
+  const chargeISO = type === "Full Series" ? firstChargeDate(c) : addDays(session.date, 1);
+  const reg = { id: nextId("r"), student, family: rec.family, type, sessionId: session ? session.id : null, status:"Active", base, amount, code: code || null,
+    pay: amount === 0 ? "No Payment Due" : "Authorization Required", chargeDate: chargeISO };
+  c.regs.push(reg);
+  if(session) dropSel = session.id;                  // show the date just enrolled on the Drop-In roster
+
+  const passed = chargeISO && chargeISO <= TODAY;
+  const authHtml = amount === 0
+    ? `<div class="result-line" style="color:var(--grey); margin-top:8px;">After the discount nothing is due, so no payment authorization is required and no charge will be made.</div>`
+    : `<div class="auth-required-title">Payment Authorization Required</div>
+       <div class="result-line" style="color:var(--grey);">${student} is registered, but the parent must authorize this ${fmt(amount)} charge before it can be processed &mdash; adding a student does not authorize payment on the parent's behalf.${passed ? ` The scheduled charge date has already passed, so the parent will be asked to pay right away from the Parent Portal.` : ``}</div>`;
+  document.getElementById("rs-result").innerHTML = `<div class="result-panel">
+      <div class="result-title">Student Added</div>
+      <div class="result-line"><strong>${esc(student)}</strong> &middot; ${esc(c.name)} &middot; ${type}${session ? " &middot; " + longDate(session.date) : ""}</div>
+      <div class="result-amount">${fmt(amount)}</div>
+      ${discountLine}
+      <div class="result-line">Scheduled charge: ${chargeISO ? longDate(chargeISO) : "—"}</div>
+      ${authHtml}
+      <div class="result-line c-grey" style="margin-top:8px; font-size:12px;"><span class="sim-tag" style="margin-left:0;">Simulated</span> Mid-series enrollment pricing and the registration cutoff are not modeled in this wireframe.</div>
+    </div>`;
+  document.getElementById("rs-code").value = ""; document.getElementById("rs-override").checked = false;
+  renderRosterStats(); renderRoster(); renderSchedule(); renderOverview(); renderDetailHeader(); refreshAddStudentForm();
+}
+
+// ===================================================================
+// SCHEDULE
+// ===================================================================
+let sessionPanel = null;     // { id, mode:'edit'|'cancel', from:'schedule'|'detail' }
+let sessionNotice = null;    // { id, html }
+
+function refreshAddEventDefaults(){
+  const c = findClass(currentId);
+  document.getElementById("se-room").innerHTML = optionList(ROOMS, c.room, true);
+  document.getElementById("se-instructor").innerHTML = optionList(INSTRUCTORS, c.instructor, true);
+  const di = document.getElementById("se-dropin");
+  di.checked = c.dropEnabled; di.disabled = !c.dropEnabled;
+  document.getElementById("se-dropprice").value = c.dropEnabled ? Number(c.dropFee).toFixed(2) : "";
+  onEventDropInChange();
+}
+function onEventDropInChange(){
+  const on = document.getElementById("se-dropin").checked;
+  document.getElementById("se-dropprice-field").style.display = on ? "block" : "none";
+  document.getElementById("se-dropcap-field").style.display = on ? "block" : "none";
+}
+
+function submitAddEvent(){
+  const c = findClass(currentId);
+  const g = id => document.getElementById(id);
+  const type = g("se-type").value, room = g("se-room").value, instructor = g("se-instructor").value;
+  const date = g("se-date").value, start = g("se-start").value, end = g("se-end").value, status = g("se-status").value;
+  const dropIn = g("se-dropin").checked && c.dropEnabled;
+  const price = parseFloat(g("se-dropprice").value);
+  const capRaw = g("se-dropcap").value.trim();
+  const recur = g("se-recur").checked, until = g("se-until").value;
+  g("se-result").innerHTML = "";
+  if(classStatus(c) === "Canceled" || classStatus(c) === "Archived"){ return showErr("se-error", `This class is ${classStatus(c)}; sessions can't be added.`); }
+  if(!date || !start || !end){ return showErr("se-error", "Choose a Date, Start Time and End Time."); }
+  if(end <= start){ return showErr("se-error", "End time must be after start time."); }
+  if(dropIn && (isNaN(price) || price < 0)){ return showErr("se-error", "Enter a valid drop-in price."); }
+  let dropCap = null;
+  if(dropIn && capRaw !== ""){ dropCap = parseInt(capRaw); if(isNaN(dropCap) || dropCap < 0) return showErr("se-error", "Drop-in capacity must be a number, or blank for the class default."); }
+  if(recur && !until){ return showErr("se-error", "Choose a Repeat Weekly Until date, or uncheck Create recurring sessions."); }
+  if(recur && until < date){ return showErr("se-error", "Repeat Until must be on or after the first date."); }
+
+  const dates = recur ? weeklyDates(date, until) : [date];
+  if(recur && addDays(dates[dates.length-1], 7) <= until){ return showErr("se-error", "A single request can create up to 52 sessions. Choose an earlier Repeat Until date."); }
+
+  const bad = [];
+  dates.forEach(d => { const m = findConflicts(null, d, start, end, room, instructor); if(m.length) bad.push({ d, m }); });
+  const override = g("se-override").checked;
+  if(bad.length && !override){
+    const text = dates.length === 1 ? `Scheduling conflict: ${bad[0].m.join(" ")} Check Override conflicts to add this session anyway.`
+      : `Scheduling conflict on ${bad.length} of ${dates.length} dates, so no sessions were created. ${bad.slice(0,3).map(b => `${longDate(b.d)}: ${b.m.join(" ")}`).join(" ")}${bad.length > 3 ? ` (+${bad.length-3} more dates)` : ""} Check Override conflicts to add them anyway.`;
+    return showErr("se-error", text);
+  }
+  showErr("se-error", "");
+  dates.forEach(d => c.sessions.push(mkSession(c, d, { type, room, instructor, start, end, dropIn, dropPrice: dropIn ? price : c.dropFee, dropCap,
+    status: status === "Canceled" ? "Canceled" : (d < TODAY ? "Completed" : "Scheduled") })));
+  g("se-result").innerHTML = `<div class="section-sub" style="color:var(--green); margin-top:12px;">${dates.length === 1 ? "Session added." : `${dates.length} weekly sessions added.`}${bad.length ? " Created with a scheduling conflict override." : ""}</div>`;
+  renderSchedule(); renderOverview(); renderDetailHeader(); renderList();
+  onRosterTypeChange();
+}
+
+function openSessionPanel(id, mode, from){ sessionPanel = { id, mode, from: from || "detail" }; sessionNotice = null; renderSchedule(); }
+function closeSessionPanel(){ sessionPanel = null; sessionNotice = null; renderSchedule(); }
+
+function sessionEditPanel(c, s){
+  const p = document.createElement("div"); p.className = "assign-panel";
+  p.innerHTML = `
+    <div class="assign-panel-summary">Editing <strong>${esc(c.name)}</strong> &middot; ${longDate(s.date)} &middot; ${timeLabel(s.start)}–${timeLabel(s.end)}</div>
+    <div class="field-row">
+      <div class="field"><label>Type</label><select id="ed-type">${optionList(["Class Session","Makeup Session","Special Event"], s.type, false)}</select></div>
+      <div class="field"><label>Room</label><select id="ed-room">${optionList(ROOMS, s.room, true)}</select></div>
+      <div class="field"><label>Instructor</label><select id="ed-instructor">${optionList(INSTRUCTORS, s.instructor, true)}</select></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date</label><input type="date" id="ed-date" value="${s.date}"></div>
+      <div class="field"><label>Start Time</label><input type="time" id="ed-start" value="${s.start}"></div>
+      <div class="field"><label>End Time</label><input type="time" id="ed-end" value="${s.end}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field" style="align-self:flex-end;"><label class="check-row" style="margin:0 0 10px;"><input type="checkbox" id="ed-dropin" ${s.dropIn ? "checked" : ""} ${c.dropEnabled ? "" : "disabled"}> Drop-in eligible</label></div>
+      <div class="field"><label>Drop-in Price ($)</label><input type="text" id="ed-dropprice" value="${Number(s.dropPrice).toFixed(2)}"></div>
+      <div class="field"><label>Drop-in Capacity</label><input type="text" id="ed-dropcap" value="${s.dropCap != null ? s.dropCap : ""}" placeholder="Class default"></div>
+    </div>
+    ${sessionDropIns(c, s.id).length ? `<div class="rule-note">This session has ${sessionDropIns(c, s.id).length} drop-in registration(s). Their price doesn't change; the new price applies to future drop-ins only.</div>` : ``}
+    <label class="check-row"><input type="checkbox" id="ed-override"> Override conflicts</label>
+    <div class="form-error" id="ed-error"></div>
+    <div class="assign-panel-actions"><button class="btn primary small" onclick="saveSessionEdits('${s.id}')">Save Changes</button><button class="btn small" onclick="closeSessionPanel()">Close</button></div>`;
+  return p;
+}
+function saveSessionEdits(id){
+  const c = findClass(currentId); const s = sessionById(c, id);
+  const g = x => document.getElementById(x);
+  const date = g("ed-date").value, start = g("ed-start").value, end = g("ed-end").value, room = g("ed-room").value, instructor = g("ed-instructor").value;
+  const dropIn = g("ed-dropin").checked && c.dropEnabled, price = parseFloat(g("ed-dropprice").value), capRaw = g("ed-dropcap").value.trim();
+  if(!date || !start || !end) return showErr("ed-error", "Date, start time and end time are required.");
+  if(end <= start) return showErr("ed-error", "End time must be after start time.");
+  if(dropIn && (isNaN(price) || price < 0)) return showErr("ed-error", "Enter a valid drop-in price.");
+  let cap = null; if(dropIn && capRaw !== ""){ cap = parseInt(capRaw); if(isNaN(cap) || cap < 0) return showErr("ed-error", "Drop-in capacity must be a number, or blank."); }
+  const changed = date !== s.date || start !== s.start || end !== s.end || room !== s.room || instructor !== s.instructor;
+  let overrode = false;
+  if(changed){
+    const m = findConflicts(id, date, start, end, room, instructor);
+    if(m.length){ if(!g("ed-override").checked) return showErr("ed-error", `Scheduling conflict: ${m.join(" ")} Check Override conflicts to save anyway.`); overrode = true; }
+  }
+  Object.assign(s, { type:g("ed-type").value, date, start, end, room, instructor, dropIn, dropPrice: dropIn ? price : s.dropPrice, dropCap: cap });
+  if(s.date >= TODAY && s.status === "Completed") s.status = "Scheduled";
+  sessionPanel = null;
+  sessionNotice = { id, html:`<div class="result-panel" style="border-color:var(--line);"><div class="result-title" style="color:var(--green);">Session Updated</div><div class="result-line">${longDate(s.date)} &middot; ${timeLabel(s.start)}–${timeLabel(s.end)} &middot; ${esc(s.room)} &middot; ${esc(s.instructor)}</div>${overrode ? `<div class="result-line c-grey" style="margin-top:6px;">Saved with a scheduling conflict override.</div>` : ``}</div>` };
+  renderSchedule(); renderOverview(); renderRoster(); renderList();
+}
+
+function sessionCancelPanel(c, s){
+  const p = document.createElement("div"); p.className = "assign-panel";
+  const drops = sessionDropIns(c, s.id);
+  const unpaid = drops.filter(r => balanceOf(r) > 0), paid = drops.filter(r => r.pay === "Paid");
+  p.innerHTML = `<div class="result-panel" style="border-color:var(--rose);">
+    <div class="result-title" style="color:var(--rose);">Cancel Session</div>
+    <div class="kv-row"><span class="k">Session</span><span class="v">${longDate(s.date)} &middot; ${timeLabel(s.start)}–${timeLabel(s.end)}</span></div>
+    <div class="kv-row"><span class="k">Drop-ins registered</span><span class="v">${drops.length}</span></div>
+    <div class="result-line" style="margin-top:14px; color:var(--cream);">${unpaid.length ? `${unpaid.length} unpaid drop-in charge${unpaid.length===1?"":"s"} will be canceled. ` : ``}${paid.length ? `${paid.length} drop-in payment${paid.length===1?"":"s"} already collected will not be refunded automatically &mdash; refunds are handled through Billing.` : (!unpaid.length ? "No drop-in charges are affected." : "")}</div>
+    <div class="result-line" style="color:var(--grey); margin-top:8px;">Full Series registrations are not charged per session, so Full Series students aren't affected. The session stays in the list as Canceled.</div>
+    <div class="assign-panel-actions" style="margin-top:14px;"><button class="btn danger small" onclick="confirmCancelSession('${s.id}')">Cancel Session</button><button class="btn small" onclick="closeSessionPanel()">Keep Session</button></div></div>`;
+  return p;
+}
+function confirmCancelSession(id){
+  const c = findClass(currentId); const s = sessionById(c, id);
+  const drops = sessionDropIns(c, id); const unpaid = drops.filter(r => balanceOf(r) > 0);
+  s.status = "Canceled";
+  unpaid.forEach(r => { r.pay = "Cancelled"; });
+  drops.forEach(r => { r.status = "Session Canceled"; });
+  sessionPanel = null;
+  sessionNotice = { id, html:`<div class="result-panel" style="border-color:var(--line);"><div class="result-title" style="color:var(--rose);">Session Canceled</div><div class="result-line">${longDate(s.date)} was canceled. ${unpaid.length} unpaid drop-in charge${unpaid.length===1?"":"s"} canceled; no Stripe activity occurred in this wireframe.</div></div>` };
+  renderSchedule(); renderRoster(); renderRosterStats(); renderOverview(); renderDetailHeader(); renderList();
+}
+
+function removeSession(id){
+  const c = findClass(currentId); const s = sessionById(c, id);
+  const drops = sessionDropIns(c, id);
+  if(drops.length){
+    sessionPanel = null;
+    sessionNotice = { id, html:`<div class="result-panel" style="border-color:var(--rose);"><div class="result-title" style="color:var(--rose);">Can't Remove Session</div><div class="result-line">This session has ${drops.length} registered drop-in${drops.length===1?"":"s"}. Cancel the session instead so the charges are handled.</div></div>` };
+  } else {
+    c.sessions.splice(c.sessions.indexOf(s), 1); sessionPanel = null; sessionNotice = null;
+    if(sessionViewId === id) backToSchedule();
+  }
+  renderSchedule(); renderRoster(); renderOverview(); renderDetailHeader(); renderList(); onRosterTypeChange();
+}
+
+// ---- Session Detail view ----
+let sessionViewId = null;
+function openSession(id){
+  sessionViewId = id; sessionPanel = null; sessionNotice = null;
+  document.getElementById("view-detail").style.display = "none";
+  document.getElementById("view-session").style.display = "block";
+  renderSessionDetail(); window.scrollTo(0, 0);
+}
+function backToSchedule(){
+  sessionViewId = null; sessionPanel = null; sessionNotice = null;
+  document.getElementById("view-session").style.display = "none";
+  document.getElementById("view-detail").style.display = "block";
+  setTab("schedule"); renderSchedule(); renderRoster(); window.scrollTo(0, 0);
+}
+function goRosterFromSession(){
+  sessionViewId = null; sessionPanel = null; sessionNotice = null;
+  document.getElementById("view-session").style.display = "none";
+  document.getElementById("view-detail").style.display = "block";
+  setTab("roster"); window.scrollTo(0, 0);
+}
+function renderSessionDetail(){
+  const c = findClass(currentId); const s = sessionById(c, sessionViewId);
+  if(!s){ backToSchedule(); return; }
+  const terminal = s.status === "Completed" || s.status === "Canceled";
+  const full = s.status === "Canceled" ? [] : activeRegs(c, "Full Series");
+  const drops = s.status === "Canceled" ? [] : sessionDropIns(c, s.id);
+  const people = full.map(r => ({ r, t:"Full Series" })).concat(drops.map(r => ({ r, t:"Drop-In" })));
+  const cap = s.dropCap != null ? s.dropCap : c.dropCapacity;
+  const body = document.getElementById("sd-body");
+  body.innerHTML = `
+    <div class="detail-head">
+      <h1>${esc(c.name)}</h1>
+      <div class="head-actions">
+        <button class="btn" ${terminal ? "disabled" : ""} onclick="openSessionPanel('${s.id}','edit','detail')">Edit</button>
+        <button class="btn" ${terminal ? "disabled" : ""} onclick="openSessionPanel('${s.id}','cancel','detail')">Cancel Session</button>
+        <button class="btn danger" ${terminal ? "disabled" : ""} onclick="removeSession('${s.id}')">Remove</button>
+        <button class="back-link" onclick="backToSchedule()">Back to Schedule &rarr;</button>
+      </div>
+    </div>
+    <div class="detail-sub"><span>${badge(s.status)}</span><span class="c-grey" style="font-size:13px;">Session Detail &middot; ${esc(s.type)}</span></div>
+    <div id="sd-panel"></div>
+    <h2>Session</h2>
+    <div style="max-width:760px; margin-bottom:28px;">
+      <div class="kv-row"><span class="k">Class</span><span class="v">${esc(c.name)}</span></div>
+      <div class="kv-row"><span class="k">Date</span><span class="v">${dayName(s.date)}, ${longDate(s.date)}</span></div>
+      <div class="kv-row"><span class="k">Time</span><span class="v">${timeLabel(s.start)} – ${timeLabel(s.end)}</span></div>
+      <div class="kv-row"><span class="k">Room</span><span class="v">${esc(s.room)}</span></div>
+      <div class="kv-row"><span class="k">Instructor</span><span class="v">${esc(s.instructor)}</span></div>
+      <div class="kv-row"><span class="k">Status</span><span class="v">${badge(s.status)}</span></div>
+      <div class="kv-row"><span class="k">Drop-In</span><span class="v">${s.dropIn ? `${fmt(s.dropPrice)} &middot; capacity ${cap}` : "Not offered for this session"}</span></div>
+    </div>
+    <h2>Session Roster</h2>
+    <div class="stat-line">Full Series: <strong>${full.length}</strong> &nbsp;&middot;&nbsp; Drop-In: <strong>${drops.length}</strong> &nbsp;&middot;&nbsp; Total: <strong>${full.length + drops.length}</strong></div>
+    <div class="rule-note">Reference only. This list is derived from the class's Full Series and Drop-In registrations; withdrawn students are not shown. Add or withdraw students from the class Roster tab. <button class="action-link" onclick="goRosterFromSession()">Go to Roster tab</button></div>
+    <div class="table-wrap">
+      <div class="head-row grid-sroster"><span>Student</span><span>Family</span><span>Registration Type</span></div>
+      ${people.length ? people.map(p => `<div class="row-grid grid-sroster"><div class="c-name">${pLink("student", p.r.student)}</div><div class="c-dim">${pLink("family", p.r.family)}</div><div class="c-dim">${p.t}</div></div>`).join("")
+        : `<div class="empty-row">${s.status === "Canceled" ? "This session was canceled, so no students are expected." : "No students are on this session's roster."}</div>`}
+    </div>`;
+  const slot = document.getElementById("sd-panel");
+  if(sessionPanel && sessionPanel.id === s.id && sessionPanel.from === "detail"){
+    slot.appendChild(sessionPanel.mode === "edit" ? sessionEditPanel(c, s) : sessionCancelPanel(c, s));
+    slot.firstChild.style.cssText = "border:1px solid var(--line); padding:16px 18px; margin:0 0 24px;";
+  }
+  if(sessionNotice && sessionNotice.id === s.id){ const n = document.createElement("div"); n.style.marginBottom = "24px"; n.innerHTML = sessionNotice.html; slot.appendChild(n); }
+}
+
+function renderSchedule(){
+  const c = findClass(currentId);
+  const list = document.getElementById("sched-list");
+  list.innerHTML = "";
+  const sessions = c.sessions.slice().sort((a,b) => a.date.localeCompare(b.date));
+  if(!sessions.length) list.innerHTML = `<div class="empty-row">No sessions scheduled. Use + Add Event to create the class dates.</div>`;
+  sessions.forEach(s => {
+    const row = document.createElement("div");
+    row.className = "row-grid grid-sched clickable" + (s.status === "Canceled" ? " muted" : "");
+    row.tabIndex = 0; row.title = "Open session details";
+    const nDrop = sessionDropIns(c, s.id).length;
+    row.innerHTML = `
+      <div class="c-dim">${esc(s.type)}</div>
+      <div class="c-name">${longDate(s.date)}</div>
+      <div class="c-dim">${timeLabel(s.start)}</div>
+      <div class="c-dim">${timeLabel(s.end)}</div>
+      <div class="c-dim">${esc(s.room)}</div>
+      <div class="c-dim">${esc(s.instructor)}</div>
+      <div class="c-dim">${s.dropIn ? nDrop : `<span class="c-grey">Off</span>`}</div>
+      <div>${badge(s.status)}</div>`;
+    const open = e => { if(e.target.closest("button, a, input, select, .assign-panel")) return; openSession(s.id); };
+    row.addEventListener("click", open);
+    row.addEventListener("keydown", e => { if(e.key === "Enter" && e.target === row) openSession(s.id); });
+    if(sessionNotice && sessionNotice.id === s.id && !sessionViewId){
+      const n = document.createElement("div"); n.className = "assign-panel"; n.innerHTML = sessionNotice.html; row.appendChild(n);
+    }
+    list.appendChild(row);
+  });
+  if(sessionViewId) renderSessionDetail();
+}
+
+// ===================================================================
+// CONTENT
+// ===================================================================
+let contentFile = null;   // { name, uploaded }
+const TYPE_ACCEPT = { Audio:"audio/*", Video:"video/*", Document:".pdf,.doc,.docx,.txt", Image:"image/*" };
+let contentRemove = null;
+
+function onContentTypeChange(){
+  document.getElementById("ct-file").accept = TYPE_ACCEPT[document.getElementById("ct-type").value];
+}
+function renderFileState(){
+  const el = document.getElementById("ct-filestate");
+  if(!contentFile){ el.innerHTML = `<div class="c-grey" style="font-size:12.5px; margin-bottom:12px;">No file uploaded yet.</div>`; return; }
+  el.innerHTML = `<div class="file-chip">${esc(contentFile.name)} &middot; ${contentFile.uploaded ? `<span style="color:var(--green);">uploaded (simulated)</span>` : `<span style="color:var(--amber);">selected, not uploaded</span>`}</div>`;
+}
+function onContentFileChosen(){
+  const f = document.getElementById("ct-file").files[0];
+  contentFile = f ? { name: f.name, uploaded:false } : null;
+  showErr("ct-error", ""); renderFileState();
+}
+function simulateUpload(){
+  if(!contentFile){ return showErr("ct-error", "Choose a file first."); }
+  contentFile.uploaded = true; showErr("ct-error", ""); renderFileState();
+}
+function useSampleFile(){
+  const t = document.getElementById("ct-type").value;
+  const ext = { Audio:"mp3", Video:"mp4", Document:"pdf", Image:"jpg" }[t];
+  contentFile = { name:`sample-${t.toLowerCase()}.${ext}`, uploaded:true };
+  showErr("ct-error", ""); renderFileState();
+}
+function saveContent(){
+  const c = findClass(currentId);
+  const title = document.getElementById("ct-title").value.trim();
+  document.getElementById("ct-result").innerHTML = "";
+  if(!title) return showErr("ct-error", "Enter a title for this content item.");
+  if(!contentFile) return showErr("ct-error", "A file is required. Choose a file and upload it.");
+  if(!contentFile.uploaded) return showErr("ct-error", "Click Upload File to upload the selected file before saving.");
+  showErr("ct-error", "");
+  c.content.unshift({ id: nextId("ct"), title, type: document.getElementById("ct-type").value, status: document.getElementById("ct-status").value, file: contentFile.name, added: TODAY });
+  document.getElementById("ct-title").value = ""; document.getElementById("ct-file").value = ""; contentFile = null; renderFileState();
+  document.getElementById("ct-result").innerHTML = `<div class="section-sub" style="color:var(--green); margin-top:12px;">Content saved.</div>`;
+  renderContent();
+}
+function toggleContentStatus(id){
+  const it = findClass(currentId).content.find(x => x.id === id);
+  it.status = it.status === "Published" ? "Draft" : "Published"; renderContent();
+}
+function renderContent(){
+  const c = findClass(currentId);
+  const list = document.getElementById("content-list");
+  list.innerHTML = "";
+  if(!c.content.length){ list.innerHTML = `<div class="empty-row">No content uploaded yet.</div>`; return; }
+  c.content.forEach(it => {
+    const row = document.createElement("div"); row.className = "row-grid grid-content";
+    row.innerHTML = `
+      <div class="c-name">${esc(it.title)}</div><div class="c-dim">${it.type}</div><div>${badge(it.status)}</div>
+      <div class="c-grey" style="font-size:12px; word-break:break-all;">${esc(it.file)}</div><div class="c-dim">${longDate(it.added).replace(/, \d{4}/, "")}</div>
+      <div class="c-actions"><button class="action-link" onclick="toggleContentStatus('${it.id}')">${it.status === "Published" ? "Unpublish" : "Publish"}</button>
+        <button class="action-link rose" onclick="contentRemove='${it.id}'; renderContent();">Remove</button></div>`;
+    if(contentRemove === it.id){
+      const p = document.createElement("div"); p.className = "assign-panel";
+      p.innerHTML = `<div class="result-panel" style="border-color:var(--rose);"><div class="result-title" style="color:var(--rose);">Remove Content</div>
+        <div class="result-line">Remove <strong>${esc(it.title)}</strong>? Families will no longer be able to open it.</div>
+        <div class="assign-panel-actions" style="margin-top:12px;"><button class="btn danger small" onclick="confirmRemoveContent('${it.id}')">Remove</button><button class="btn small" onclick="contentRemove=null; renderContent();">Keep</button></div></div>`;
+      row.appendChild(p);
+    }
+    list.appendChild(row);
+  });
+}
+function confirmRemoveContent(id){
+  const c = findClass(currentId); c.content.splice(c.content.findIndex(x => x.id === id), 1); contentRemove = null; renderContent();
+}
+
+// ===================================================================
+// Reset of the static detail forms when a class is opened
+// ===================================================================
+function resetDetailForms(){
+  withdrawPanel = null; withdrawResult = null; sessionPanel = null; sessionNotice = null; contentRemove = null; dropSel = null; sessionViewId = null; resetRosterFilters();
+  document.getElementById("view-session").style.display = "none";
+  ["acc-add-student","acc-add-event","acc-add-content"].forEach(id => document.getElementById(id).classList.remove("open"));
+  ["rs-code","se-date","se-start","se-end","se-until","se-dropcap","ct-title"].forEach(id => { document.getElementById(id).value = ""; });
+  document.getElementById("ct-file").value = ""; contentFile = null; renderFileState();
+  ["rs-override","se-recur","se-override"].forEach(id => { document.getElementById(id).checked = false; });
+  document.getElementById("se-until-field").style.display = "none";
+  ["rs-result","se-result","ct-result","ov-edit"].forEach(id => { document.getElementById(id).innerHTML = ""; });
+  ["rs-error","se-error","ct-error"].forEach(id => showErr(id, ""));
+  document.getElementById("rs-type").innerHTML = "";
+}
+
+resetAddForm();
+renderFileState();
+renderList();
+</script>
+<div id="nav-toast"></div>
+</body>
+</html>
