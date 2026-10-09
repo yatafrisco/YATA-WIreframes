@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YATA Staff - Lessons</title>
+<style>
+  :root{
+    --bg: #0b0b0c;
+    --panel: #131315;
+    --line: #3a352c;
+    --line-soft: #29261f;
+    --cream: #f2ead9;
+    --cream-dim: #cfc7b3;
+    --grey: #948f83;
+    --green: #7fae8e;
+    --amber: #d1a85e;
+    --rose: #c98b7a;
+  }
+  * { box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--cream-dim); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .app{ display: grid; grid-template-columns: 210px 1fr; min-height: 100vh; }
+
+  .sidebar{ background: #0e0e10; border-right: 1px solid var(--line-soft); padding: 24px 0; }
+  .logo{ padding: 0 22px 24px; font-family: Georgia, serif; color: var(--cream); font-size: 15px; letter-spacing: 0.05em; border-bottom: 1px solid var(--line-soft); margin-bottom: 12px; }
+  .nav-item{ padding: 11px 22px; font-size: 12.5px; letter-spacing: 0.03em; color: var(--grey); text-transform: uppercase; }
+  .nav-item.active{ color: var(--cream); background: rgba(255,255,255,0.03); border-left: 2px solid var(--amber); }
+
+  .main{ padding: 36px 40px 80px; }
+  h1{ font-family: Georgia, serif; font-weight: 400; font-size: 40px; color: var(--cream); margin: 0 0 20px; }
+  h2{ font-family: Georgia, serif; font-weight: 400; font-size: 24px; color: var(--cream); margin: 0 0 6px; }
+  .section-sub{ font-size: 13px; color: var(--grey); margin: 0 0 18px; line-height: 1.5; }
+  .section-block{ margin-bottom: 40px; }
+
+  .tabs{ display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 26px; }
+  .tab{ padding: 11px 18px; font-size: 12.5px; letter-spacing: 0.04em; color: var(--grey); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; text-transform: uppercase; }
+  .tab.active{ color: var(--cream); border-bottom-color: var(--amber); }
+  .panel{ display: none; }
+  .panel.active{ display: block; }
+
+  .filter-bar{ display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+  .filter-field{ display: flex; flex-direction: column; gap: 5px; }
+  .filter-field label{ font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); }
+  .filter-field select, .filter-field input{
+    background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim);
+    padding: 8px 10px; font-size: 13px; min-width: 140px;
+  }
+  .filter-field.search input{ min-width: 220px; }
+  .btn{ background: none; border: 1px solid var(--line); color: var(--cream-dim); padding: 9px 16px; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; height: 36px; }
+  .btn:hover{ border-color: var(--cream-dim); }
+  .btn.primary{ border-color: var(--amber); color: var(--amber); }
+  .btn.primary:hover{ background: rgba(209,168,94,0.08); }
+  .btn.small{ height: auto; padding: 7px 13px; font-size: 11px; }
+  .kv-row{ display:flex; gap: 16px; font-size: 13.5px; padding: 5px 0; border-bottom: 1px solid var(--line-soft); }
+  .kv-row:last-of-type{ border-bottom: none; }
+  .kv-row .k{ width: 110px; flex-shrink: 0; color: var(--grey); }
+  .kv-row .v{ color: var(--cream-dim); }
+  .btn.danger{ border-color: var(--rose); color: var(--rose); }
+  .btn.danger:hover{ background: rgba(201,139,122,0.08); }
+  .btn-apply{ background: none; border: 1px solid var(--amber); color: var(--amber); padding: 8px 16px; font-size: 12px; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; height: 36px; }
+  .btn-apply:hover{ background: rgba(209,168,94,0.08); }
+
+  .table-wrap{ border: 1px solid var(--line); overflow-x: auto; }
+  .head-row, .row-grid{ display: grid; gap: 10px; padding: 12px 16px; align-items: center; }
+  .head-row{ font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--grey); border-bottom: 1px solid var(--line-soft); }
+  .row-grid{ border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+  .row-grid:last-child{ border-bottom: none; }
+  .row-grid:hover{ background: rgba(255,255,255,0.02); }
+
+  .grid-offerings{ grid-template-columns: 1fr 120px 80px; }
+  .grid-slots{ grid-template-columns: 130px 160px 150px 100px 110px 220px; min-width: 890px; }
+
+  .c-name{ color: var(--cream); }
+  .c-dim{ color: var(--cream-dim); }
+  .c-grey{ color: var(--grey); }
+  .c-actions{ display:flex; gap: 12px; flex-wrap: wrap; }
+  .action-link{ color: var(--amber); font-size: 12px; text-decoration: none; cursor: pointer; background:none; border:none; padding:0; font-family: inherit; }
+  .action-link:hover{ text-decoration: underline; }
+  .action-link.muted{ color: var(--grey); }
+
+  .status{ font-size: 10px; padding: 3px 8px; border: 1px solid; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; display:inline-block; }
+  .status.open{ color: var(--amber); border-color: var(--amber); }
+  .status.booked{ color: var(--green); border-color: var(--green); }
+  .status.completed{ color: var(--grey); border-color: var(--grey); }
+  .status.cancelled{ color: var(--rose); border-color: var(--rose); }
+  .avail.booked{ color: var(--cream-dim); }
+  .avail.open{ color: var(--amber); }
+
+  /* Collapsible Publish Lesson Slots panel */
+  .accordion{ border: 1px solid var(--line); margin-bottom: 22px; }
+  .accordion-header{ display:flex; justify-content: space-between; align-items: center; padding: 14px 18px; cursor: pointer; }
+  .accordion-header:hover{ background: rgba(255,255,255,0.015); }
+  .accordion-title{ font-size: 13px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--amber); }
+  .accordion-chevron{ font-size: 13px; color: var(--grey); transition: transform 0.15s ease; flex-shrink:0; margin-left: 16px; }
+  .accordion.open .accordion-chevron{ transform: rotate(90deg); }
+  .accordion-body{ display:none; padding: 4px 18px 22px; border-top: 1px solid var(--line-soft); }
+  .accordion.open .accordion-body{ display:block; }
+
+  .field{ margin-bottom: 16px; }
+  .field label{ display:block; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--grey); margin-bottom: 6px; }
+  .field select, .field input{ width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--cream-dim); padding: 9px 11px; font-size: 13.5px; font-family: inherit; }
+  .field-row{ display:flex; gap: 14px; }
+  .field-row .field{ flex:1; }
+
+  .check-row{ display:flex; align-items:center; gap:8px; margin: 4px 0 18px; font-size:13px; color:var(--cream-dim); }
+  .check-row input{ width:auto; margin:0; flex-shrink:0; }
+
+  /* Inline Assign Student panel (spans full row width beneath the Open slot) */
+  .assign-panel{ grid-column: 1 / -1; border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 14px; }
+  .assign-panel-summary{ font-size: 13px; color: var(--grey); margin-bottom: 14px; line-height: 1.6; }
+  .assign-panel-summary strong{ color: var(--cream-dim); font-weight: 500; }
+  .assign-panel .field-row{ margin-bottom: 4px; }
+  .assign-panel-actions{ display:flex; gap: 12px; margin-top: 6px; }
+
+  .result-panel{ border: 1px solid var(--amber); padding: 16px 18px; margin-top: 10px; }
+  .result-title{ font-family: Georgia, serif; font-size: 15px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--amber); margin-bottom: 10px; }
+  .result-line{ font-size: 13.5px; color: var(--cream-dim); margin-bottom: 4px; }
+  .result-amount{ font-family: Georgia, serif; font-size: 20px; color: var(--cream); margin: 8px 0; }
+  .auth-required-title{ font-family: Georgia, serif; font-size: 14px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--amber); margin: 14px 0 6px; }
+
+  .pagination{ display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 12.5px; color: var(--grey); }
+  .pagination .pages{ display:flex; gap: 6px; }
+  .pagination button{ background: none; border: 1px solid var(--line); color: var(--cream-dim); padding: 6px 12px; font-size: 12.5px; cursor: pointer; }
+  .pagination button.current{ border-color: var(--amber); color: var(--amber); }
+  .pagination button:disabled{ opacity: 0.35; cursor: default; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">YATA STAFF</div>
+    <div class="nav-item">Dashboard</div>
+    <div class="nav-item">Parent Portal</div>
+    <div class="nav-item">Families</div>
+    <div class="nav-item">Students</div>
+    <div class="nav-item">Staff</div>
+    <div class="nav-item">Rooms</div>
+    <div class="nav-item">Productions</div>
+    <div class="nav-item">Classes</div>
+    <div class="nav-item active">Lessons</div>
+    <div class="nav-item">Billing</div>
+    <div class="nav-item">Email</div>
+    <div class="nav-item">Reports</div>
+  </div>
+
+  <div class="main">
+    <h1>Lessons</h1>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="lessons">Lessons</div>
+      <div class="tab" data-tab="offerings">Offerings</div>
+    </div>
+
+    <!-- ============ LESSONS TAB ============ -->
+    <div class="panel active" id="panel-lessons">
+
+      <div class="accordion" id="acc-publish">
+        <div class="accordion-header" onclick="toggleAccordion('acc-publish')">
+          <div class="accordion-title">+ Add Lesson Slot</div>
+          <div class="accordion-chevron">&#9656;</div>
+        </div>
+        <div class="accordion-body">
+          <div class="section-sub" style="margin-top:14px;">Leave Student blank to create a slot open for parent booking. Select a Student to create the slot already booked for them.</div>
+          <div class="field">
+            <label>Offering</label>
+            <select id="add-slot-offering"><option>Choose an offering</option><option>Choreo</option><option>Vocal Lessons</option></select>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Instructor</label>
+              <select id="add-instructor"><option>Unassigned</option></select>
+            </div>
+            <div class="field">
+              <label>Room</label>
+              <select id="add-room"><option>Unassigned</option></select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Fee Override ($)</label>
+            <input type="text" id="add-fee-override" placeholder="Offering default">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="add-slot-date">
+            </div>
+            <div class="field">
+              <label>Start Time</label>
+              <input type="time" id="add-slot-time">
+            </div>
+          </div>
+          <div class="field-row" id="add-repeat-row">
+            <div class="field">
+              <label>Repeat Until (optional)</label>
+              <input type="date">
+            </div>
+            <div class="field">
+              <label>Frequency</label>
+              <select><option>Weekly (when end date set)</option><option>Does not repeat</option></select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Student (optional)</label>
+            <select id="add-slot-student" onchange="onAddSlotStudentChange()">
+              <option value="">None &mdash; leave open for online booking</option>
+            </select>
+          </div>
+          <div class="section-sub" id="add-single-occurrence-note" style="display:none; border: 1px dashed var(--line); padding: 10px 12px; margin: -6px 0 18px;">
+            A Student is selected, so this creates one booked lesson occurrence, not a recurring student booking. Repeat Until/Frequency are for creating additional open slots, not for enrolling a student across multiple future dates.
+          </div>
+          <label class="check-row"><input type="checkbox" id="add-override-conflict"> Override scheduling conflict</label>
+          <button class="btn primary" onclick="submitAddSlot()">Add Slot(s)</button>
+          <div id="add-slot-result"></div>
+        </div>
+      </div>
+
+      <h2>Lesson Slots &amp; Bookings</h2>
+      <div class="section-sub">Manage lesson slots and bookings below. You can assign or unassign students, update upcoming lesson details, or search past lessons.</div>
+
+      <div class="filter-bar">
+        <div class="filter-field search">
+          <label>Search</label>
+          <input type="text" id="ls-search" placeholder="Student name...">
+        </div>
+        <div class="filter-field">
+          <label>Offering Type</label>
+          <select id="ls-offering"><option>All Offering Types</option><option>Choreo</option><option>Vocal Lessons</option></select>
+        </div>
+        <div class="filter-field">
+          <label>From</label>
+          <input type="date" id="ls-from">
+        </div>
+        <div class="filter-field">
+          <label>To</label>
+          <input type="date" id="ls-to">
+        </div>
+        <div class="filter-field">
+          <label>Status</label>
+          <select id="ls-status">
+            <option selected>Active</option>
+            <option>All</option>
+            <option>Open</option>
+            <option>Booked</option>
+            <option>Completed</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+        <button class="btn-apply" onclick="applySlotFilters()">Apply</button>
+      </div>
+
+      <div class="table-wrap">
+        <div class="head-row grid-slots">
+          <span>Lesson</span><span>Start</span><span>Student</span><span>Availability</span><span>Status</span><span>Actions</span>
+        </div>
+        <div id="slots-list"></div>
+      </div>
+
+      <div class="pagination">
+        <span id="slots-count-label">Showing 1&ndash;25 of 83</span>
+        <div class="pages" id="slots-page-buttons"></div>
+      </div>
+    </div>
+
+    <!-- ============ OFFERINGS TAB ============ -->
+    <div class="panel" id="panel-offerings">
+      <div class="filter-bar">
+        <div class="filter-field search">
+          <label>Search</label>
+          <input type="text" placeholder="Search offerings...">
+        </div>
+        <div class="filter-field">
+          <label>Status</label>
+          <select><option>All</option><option>Active</option><option>Inactive</option></select>
+        </div>
+        <button class="btn">Filter</button>
+        <button class="btn primary" style="margin-left:auto;">Add Offering</button>
+      </div>
+      <div class="table-wrap">
+        <div class="head-row grid-offerings">
+          <span>Offering</span><span>Price</span><span></span>
+        </div>
+        <div class="row-grid grid-offerings">
+          <div class="c-name">Choreo</div>
+          <div class="c-dim">$100.00</div>
+          <div><button class="action-link">Edit</button></div>
+        </div>
+        <div class="row-grid grid-offerings">
+          <div class="c-name">Vocal Lessons</div>
+          <div class="c-dim">$100.00</div>
+          <div><button class="action-link">Edit</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+  });
+});
+
+function toggleAccordion(id){
+  document.getElementById(id).classList.toggle("open");
+}
+
+// ===== DEMO DATA ONLY - not production business rules =====
+// One lesson-slot lifecycle: Open -> Booked (via parent self-service OR staff Assign
+// Student) -> Completed once the lesson has occurred. A Booked lesson may instead become
+// Cancelled. Completed and Cancelled are terminal. There is no separate "staff-assigned
+// lesson" record type. A lesson's payment status is independent of its lesson status and
+// is intentionally not modeled here.
+const families = {
+  "Andermen": ["Jackson Andermen", "Cohen Andermen", "Vivian Andermen"],
+  "Morris": ["Jackson Morris", "Morgan Morris"],
+  "Johnson": ["Emma Johnson"],
+  "Smith": ["Jack Smith", "Jill Smith"]
+};
+
+const knownSlots = [
+  { offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel:"September 14, 2026 7:00 pm", dateSort:"2026-09-14", student:"Jill Smith", lifecycle:"Completed" },
+  { offering:"Choreo", instructor:"Mr. Delgado", room:"Studio B", fee:100.00, dateLabel:"September 16, 2026 3:00 pm", dateSort:"2026-09-16", student:"Morgan Morris", lifecycle:"Completed" },
+  { offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel:"September 21, 2026 7:00 pm", dateSort:"2026-09-21", student:"Emma Johnson", lifecycle:"Completed" },
+  { offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel:"September 28, 2026 7:00 pm", dateSort:"2026-09-28", student:"Emma Johnson", lifecycle:"Booked" },
+  { offering:"Choreo", instructor:"Mr. Delgado", room:"Studio B", fee:100.00, dateLabel:"September 30, 2026 3:00 pm", dateSort:"2026-09-30", student:"Jackson Andermen", lifecycle:"Booked", demoPaymentCollected:true },
+  { offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel:"October 5, 2026 7:00 pm", dateSort:"2026-10-05", student:"Jack Smith", lifecycle:"Booked" },
+  { offering:"Choreo", instructor:"Mr. Delgado", room:"Studio B", fee:100.00, dateLabel:"October 7, 2026 3:00 pm", dateSort:"2026-10-07", student:"Jackson Andermen", lifecycle:"Booked" },
+  { offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel:"October 12, 2026 7:00 pm", dateSort:"2026-10-12", student:null, lifecycle:"Open" },
+  { offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel:"October 19, 2026 7:00 pm", dateSort:"2026-10-19", student:null, lifecycle:"Open" },
+  { offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel:"October 26, 2026 7:00 pm", dateSort:"2026-10-26", student:null, lifecycle:"Open" },
+  { offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel:"October 20, 2026 7:00 pm", dateSort:"2026-10-20", student:"Cohen Andermen", lifecycle:"Cancelled" }
+];
+
+function formatSlotLabel(d, timeLabel){
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${timeLabel}`;
+}
+function isoOf(d){ return d.toISOString().slice(0,10); }
+
+function generateAllSlots(){
+  const rows = knownSlots.map((s,i) => Object.assign({ id:"slot"+i }, s));
+  let vocalDate = new Date(2026, 10, 2);   // Nov 2, 2026 (Monday)
+  let choreoDate = new Date(2026, 10, 4);  // Nov 4, 2026 (Wednesday)
+  let toggle = 0;
+  let idCounter = rows.length;
+  while(rows.length < 83){
+    if(toggle % 2 === 0){
+      rows.push({ id:"slot"+idCounter++, offering:"Vocal Lessons", instructor:"Ms. Rivera", room:"Studio A", fee:100.00, dateLabel: formatSlotLabel(vocalDate, "7:00 pm"), dateSort: isoOf(vocalDate), student:null, lifecycle:"Open" });
+      vocalDate.setDate(vocalDate.getDate() + 7);
+    } else {
+      rows.push({ id:"slot"+idCounter++, offering:"Choreo", instructor:"Mr. Delgado", room:"Studio B", fee:100.00, dateLabel: formatSlotLabel(choreoDate, "3:00 pm"), dateSort: isoOf(choreoDate), student:null, lifecycle:"Open" });
+      choreoDate.setDate(choreoDate.getDate() + 7);
+    }
+    toggle++;
+  }
+  return rows;
+}
+
+function chargeDateFromSlot(slot){
+  const d = new Date(slot.dateSort + "T00:00:00");
+  d.setDate(d.getDate() + 1);
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+const allSlots = generateAllSlots();
+// "Active" = lessons that are still live: Open or Booked.
+function isActiveSlot(s){ return s.lifecycle === "Open" || s.lifecycle === "Booked"; }
+document.getElementById("ls-status").value = "Active";
+let filteredSlots = allSlots.filter(isActiveSlot);
+let slotsCurrentPage = 1;
+const SLOTS_PAGE_SIZE = 25;
+let assigningSlotId = null;
+let assignResultForSlotId = null;
+let editingSlotId = null;
+let editResultForSlotId = null;
+let editResultOverrode = false; // true when a real instructor/room conflict was overridden on the last save
+let unassignResultForSlotId = null;
+let unassignResultInfo = null; // { previousStudent, becameParentBookable }
+let cancellingSlotId = null;
+let cancelResultForSlotId = null;
+let cancelResultInfo = null; // { student }
+
+// DEMO ONLY: a fixed reference "today" so this wireframe can demonstrate both cutoff
+// outcomes below. Real cutoff logic (11:59 PM Central the day before the lesson) is
+// specified elsewhere and is not recomputed here.
+const DEMO_TODAY_ISO = "2026-10-15";
+function isPastParentCutoff(slot){
+  return new Date(slot.dateSort) <= new Date(DEMO_TODAY_ISO);
+}
+
+function findSlot(id){ return allSlots.find(s => s.id === id); }
+// Completed and Cancelled are terminal: they cannot be booked, assigned, edited, removed, or cancelled.
+function isTerminal(slot){ return slot.lifecycle === "Completed" || slot.lifecycle === "Cancelled"; }
+
+function applySlotFilters(){
+  const q = document.getElementById("ls-search").value.toLowerCase().trim();
+  const offering = document.getElementById("ls-offering").value;
+  const status = document.getElementById("ls-status").value;
+  const fromVal = document.getElementById("ls-from").value;
+  const toVal = document.getElementById("ls-to").value;
+  const fromDate = fromVal ? new Date(fromVal) : null;
+  const toDate = toVal ? new Date(toVal) : null;
+
+  filteredSlots = allSlots.filter(s => {
+    if(q && !(s.student && s.student.toLowerCase().includes(q))) return false;
+    if(offering !== "All Offering Types" && s.offering !== offering) return false;
+    if(status === "Active"){ if(s.lifecycle !== "Open" && s.lifecycle !== "Booked") return false; }
+    else if(status !== "All" && s.lifecycle !== status) return false;
+    const d = new Date(s.dateSort);
+    if(fromDate && d < fromDate) return false;
+    if(toDate && d > toDate) return false;
+    return true;
+  });
+  slotsCurrentPage = 1;
+  assigningSlotId = null;
+  editingSlotId = null;
+  cancellingSlotId = null;
+  renderSlots();
+}
+
+function statusBadgeClass(lifecycle){ return lifecycle.toLowerCase(); }
+function statusBadgeText(lifecycle){ return lifecycle; }
+
+document.getElementById("ls-search").addEventListener("keydown", e => { if(e.key === "Enter") applySlotFilters(); });
+
+function flatStudentOptions(){
+  const opts = [];
+  Object.keys(families).forEach(fam => {
+    families[fam].forEach(name => opts.push(`<option value="${name}">${name} (${fam})</option>`));
+  });
+  return opts.join("");
+}
+
+function onAddSlotStudentChange(){
+  const hasStudent = document.getElementById("add-slot-student").value !== "";
+  document.getElementById("add-repeat-row").style.display = hasStudent ? "none" : "flex";
+  document.getElementById("add-single-occurrence-note").style.display = hasStudent ? "block" : "none";
+}
+
+function submitAddSlot(){
+  const offering = document.getElementById("add-slot-offering").value;
+  const dateRaw = document.getElementById("add-slot-date").value;
+  const timeRaw = document.getElementById("add-slot-time").value;
+  const feeOverrideRaw = document.getElementById("add-fee-override").value.trim();
+  const student = document.getElementById("add-slot-student").value;
+  const instructor = document.getElementById("add-instructor").value;
+  const room = document.getElementById("add-room").value;
+  const resultBox = document.getElementById("add-slot-result");
+
+  if(offering === "Choose an offering" || !dateRaw || !timeRaw){
+    resultBox.innerHTML = `<div class="section-sub" style="color:var(--rose); margin-top:12px;">Choose an Offering, Date, and Start Time before adding this slot.</div>`;
+    return;
+  }
+
+  // Same scheduling-conflict rules as Edit. Instructor/room conflicts only: the override never
+  // affects the one-student-per-lesson rule (a selected Student still creates one Booked lesson).
+  let overrodeConflict = false;
+  const conflicts = findSchedulingConflicts(null, dateRaw, timeRaw, instructor, room);
+  if(conflicts.length){
+    if(!document.getElementById("add-override-conflict").checked){
+      resultBox.innerHTML = `<div class="section-sub" style="color:var(--rose); margin-top:12px;">Scheduling conflict: ${conflicts.join(" ")} Check Override scheduling conflict to add this slot anyway.</div>`;
+      return;
+    }
+    overrodeConflict = true;
+  }
+  const overrideNote = overrodeConflict ? ` Created with a scheduling conflict override.` : ``;
+
+  const defaultFee = 100.00;
+  const overrideAmount = parseFloat(feeOverrideRaw);
+  const fee = (feeOverrideRaw && !isNaN(overrideAmount) && overrideAmount >= 0) ? overrideAmount : defaultFee;
+
+  const d = new Date(dateRaw + "T00:00:00");
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const [h, m] = timeRaw.split(":");
+  let hour = parseInt(h);
+  const ampm = hour >= 12 ? "pm" : "am";
+  hour = hour % 12 || 12;
+  const timeLabel = `${hour}:${m} ${ampm}`;
+  const dateLabel = `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${timeLabel}`;
+
+  const newSlot = {
+    id: "slot" + (allSlots.length + Math.random().toString(36).slice(2,7)),
+    offering, instructor, room, fee,
+    dateLabel, dateSort: dateRaw,
+    student: student || null,
+    lifecycle: student ? "Booked" : "Open"
+  };
+  allSlots.unshift(newSlot);
+  document.getElementById("ls-search").value = "";
+  document.getElementById("ls-offering").value = "All Offering Types";
+  document.getElementById("ls-status").value = "Active";
+  document.getElementById("ls-from").value = "";
+  document.getElementById("ls-to").value = "";
+  filteredSlots = allSlots.filter(isActiveSlot);
+  slotsCurrentPage = 1;
+
+  if(student){
+    resultBox.innerHTML = overrodeConflict ? `<div class="section-sub" style="color: var(--grey); margin-top:12px;">${overrideNote.trim()}</div>` : "";
+    assignResultForSlotId = newSlot.id;
+    renderSlots();
+  } else {
+    resultBox.innerHTML = `<div class="section-sub" style="color: var(--green); margin-top:12px;">Slot added and open for parent booking.${overrideNote}</div>`;
+    renderSlots();
+  }
+}
+
+document.getElementById("add-slot-student").innerHTML += flatStudentOptions();
+
+function openAssignPanel(id){
+  const target = findSlot(id);
+  if(!target || isTerminal(target)) return;
+  assigningSlotId = id;
+  assignResultForSlotId = null;
+  editingSlotId = null;
+  editResultForSlotId = null;
+  cancellingSlotId = null;
+  unassignResultForSlotId = null;
+  cancelResultForSlotId = null;
+  renderSlots();
+}
+function closeAssignPanel(){
+  assigningSlotId = null;
+  renderSlots();
+}
+
+function confirmAssignStudent(id){
+  const student = document.getElementById("assign-student-select").value;
+  if(!student) return;
+
+  const slot = findSlot(id);
+  if(isTerminal(slot)) return;
+  slot.lifecycle = "Booked";
+  slot.student = student;
+  assigningSlotId = null;
+  assignResultForSlotId = id;
+  renderSlots();
+}
+
+function openEditPanel(id){
+  const target = findSlot(id);
+  if(!target || isTerminal(target)) return;
+  editingSlotId = id;
+  assigningSlotId = null;
+  assignResultForSlotId = null;
+  editResultForSlotId = null;
+  cancellingSlotId = null;
+  unassignResultForSlotId = null;
+  cancelResultForSlotId = null;
+  renderSlots();
+}
+function closeEditPanel(){
+  editingSlotId = null;
+  renderSlots();
+}
+
+// DEMO ONLY option lists for the lesson-details Edit UI.
+const EDIT_INSTRUCTORS = ["Ms. Rivera", "Mr. Delgado", "Unassigned"];
+const EDIT_ROOMS = ["Studio A", "Studio B", "Unassigned"];
+// Both current offerings are priced at $100 on the Offerings tab.
+const OFFERING_DEFAULT_FEE = 100.00;
+
+function optionsHtml(list, current){
+  const items = list.includes(current) ? list : list.concat([current]);
+  return items.map(v => `<option${v === current ? " selected" : ""}>${v}</option>`).join("");
+}
+function timeFromLabel(label){
+  const m = label.match(/(\d{1,2}):(\d{2}) (am|pm)$/);
+  if(!m) return "";
+  let h = parseInt(m[1]) % 12;
+  if(m[3] === "pm") h += 12;
+  return String(h).padStart(2, "0") + ":" + m[2];
+}
+function buildDateLabel(dateISO, timeRaw){
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const d = new Date(dateISO + "T00:00:00");
+  const [h, m] = timeRaw.split(":");
+  let hour = parseInt(h);
+  const ampm = hour >= 12 ? "pm" : "am";
+  hour = hour % 12 || 12;
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${hour}:${m} ${ampm}`;
+}
+
+// DEMO scheduling-conflict check. Lesson duration is not modeled in this prototype, so two lessons
+// conflict when they share a date and start time AND an instructor or a room. "Unassigned" never
+// conflicts. Cancelled lessons free up their instructor and room. This covers instructor/room
+// conflicts only: the override can never put a second student on a lesson, and Edit has no way
+// to add or change a student.
+function findSchedulingConflicts(slotId, dateISO, timeRaw, instructor, room){
+  const sameTime = allSlots.filter(o => o.id !== slotId && o.lifecycle !== "Cancelled" && o.dateSort === dateISO && timeFromLabel(o.dateLabel) === timeRaw);
+  const instructorHit = instructor !== "Unassigned" ? sameTime.find(o => o.instructor === instructor) : null;
+  const roomHit = room !== "Unassigned" ? sameTime.find(o => o.room === room) : null;
+  const messages = [];
+  if(instructorHit) messages.push(`${instructor} is already scheduled for ${instructorHit.offering} on ${instructorHit.dateLabel}.`);
+  if(roomHit) messages.push(`${room} is already in use for ${roomHit.offering} on ${roomHit.dateLabel}.`);
+  return messages;
+}
+
+// Saves the lesson-details edits only. Unassign Student is a separate action and is not
+// part of saving. Fee is locked once a lesson is Booked; Fee Override is editable only while Open.
+function saveLessonEdits(id){
+  const slot = findSlot(id);
+  if(!slot || isTerminal(slot)) return;
+  const err = document.getElementById("edit-error");
+  err.textContent = "";
+
+  const offering = document.getElementById("edit-offering").value;
+  const instructor = document.getElementById("edit-instructor").value;
+  const room = document.getElementById("edit-room").value;
+  const dateRaw = document.getElementById("edit-date").value;
+  const timeRaw = document.getElementById("edit-time").value;
+
+  if(!offering || !dateRaw || !timeRaw){
+    err.textContent = "Offering, Date, and Start Time are required.";
+    return;
+  }
+
+  let newFee = slot.fee;
+  if(slot.lifecycle === "Open"){
+    const raw = document.getElementById("edit-fee-override").value.trim();
+    if(raw === ""){
+      newFee = OFFERING_DEFAULT_FEE;
+    } else {
+      const n = parseFloat(raw);
+      if(isNaN(n) || n < 0){
+        err.textContent = "Enter a valid fee amount, or leave Fee Override blank to use the offering default.";
+        return;
+      }
+      newFee = n;
+    }
+  }
+
+  // Same scheduling-conflict validation as creating a slot, applied when the date, start time,
+  // instructor, or room is being changed. "Override scheduling conflict" bypasses it.
+  const scheduleChanged = dateRaw !== slot.dateSort || timeRaw !== timeFromLabel(slot.dateLabel) || instructor !== slot.instructor || room !== slot.room;
+  let overrodeConflict = false;
+  if(scheduleChanged){
+    const conflicts = findSchedulingConflicts(id, dateRaw, timeRaw, instructor, room);
+    if(conflicts.length){
+      if(!document.getElementById("edit-override-conflict").checked){
+        err.textContent = "Scheduling conflict: " + conflicts.join(" ") + " Check Override scheduling conflict to save anyway.";
+        return;
+      }
+      overrodeConflict = true;
+    }
+  }
+
+  slot.offering = offering;
+  slot.instructor = instructor;
+  slot.room = room;
+  slot.dateSort = dateRaw;
+  slot.dateLabel = buildDateLabel(dateRaw, timeRaw);
+  slot.fee = newFee;
+
+  editingSlotId = null;
+  editResultForSlotId = id;
+  editResultOverrode = overrodeConflict;
+  renderSlots();
+}
+
+// Add Lesson Slot uses the same DEMO Instructor/Room options as Edit. Unassigned remains the default.
+document.getElementById("add-instructor").innerHTML = optionsHtml(EDIT_INSTRUCTORS, "Unassigned");
+document.getElementById("add-room").innerHTML = optionsHtml(EDIT_ROOMS, "Unassigned");
+
+function unassignStudentFromSlot(id){
+  const slot = findSlot(id);
+  if(!slot || slot.lifecycle !== "Booked") return;
+  const previousStudent = slot.student;
+  const becameParentBookable = !isPastParentCutoff(slot);
+
+  // Unassign preserves the slot record: only the Student assignment is removed and the
+  // slot goes Booked -> Open. This is not a Cancel - the occurrence itself continues to
+  // exist. Any unpaid Scheduled or Authorization Required charge for the removed student's
+  // booking is cancelled. A payment that was already collected is NOT refunded here;
+  // refunds are handled separately through Billing.
+  slot.student = null;
+  slot.lifecycle = "Open";
+
+  editingSlotId = null;
+  unassignResultForSlotId = id;
+  unassignResultInfo = { previousStudent, becameParentBookable };
+  renderSlots();
+}
+
+// DEMO: unpaid = the lesson's Scheduled / Authorization Required charge; paid = payment already collected.
+function cancelPaymentConsequence(slot){
+  return slot.demoPaymentCollected
+    ? `${fmt(slot.fee)} has already been collected for ${slot.student}. Cancelling this lesson will not automatically refund it &mdash; refunds are handled separately through Billing.`
+    : `Cancelling this lesson will cancel the ${fmt(slot.fee)} charge for ${slot.student}.`;
+}
+function cancelPaymentOutcome(slot){
+  return slot.demoPaymentCollected
+    ? `The ${fmt(slot.fee)} payment already collected has not been refunded automatically. Refunds are handled separately through Billing.`
+    : `The ${fmt(slot.fee)} charge for ${slot.student} has been cancelled.`;
+}
+
+function openCancelPanel(id){
+  const slot = findSlot(id);
+  if(!slot || slot.lifecycle !== "Booked") return;
+  cancellingSlotId = id;
+  assigningSlotId = null;
+  editingSlotId = null;
+  editResultForSlotId = null;
+  assignResultForSlotId = null;
+  unassignResultForSlotId = null;
+  cancelResultForSlotId = null;
+  renderSlots();
+}
+function closeCancelPanel(){
+  cancellingSlotId = null;
+  renderSlots();
+}
+
+function confirmCancelLesson(id){
+  const slot = findSlot(id);
+  if(!slot || slot.lifecycle !== "Booked") return;
+
+  // Cancel ends the lesson occurrence: Booked -> Cancelled (terminal). The student stays on
+  // the record for history, and the slot does not reopen for parent booking. Any unpaid
+  // Scheduled or Authorization Required charge is cancelled; an already-collected payment is
+  // not automatically refunded (refunds are handled separately through Billing).
+  slot.lifecycle = "Cancelled";
+
+  cancellingSlotId = null;
+  cancelResultForSlotId = id;
+  cancelResultInfo = { student: slot.student }; // student is preserved on the Cancelled record
+  renderSlots();
+}
+
+function renderSlots(){
+  const list = document.getElementById("slots-list");
+  list.innerHTML = "";
+  const start = (slotsCurrentPage - 1) * SLOTS_PAGE_SIZE;
+  const pageItems = filteredSlots.slice(start, start + SLOTS_PAGE_SIZE);
+
+  pageItems.forEach(s => {
+    const row = document.createElement("div");
+    row.className = "row-grid grid-slots";
+    let studentCell, availCell, actionsCell;
+
+    if(s.lifecycle === "Booked"){
+      studentCell = `<div class="c-dim">${s.student}</div>`;
+      availCell = `<div class="avail booked">Booked</div>`;
+      actionsCell = `<div class="c-actions"><button class="action-link" onclick="openEditPanel('${s.id}')">Edit</button><button class="action-link" onclick="openCancelPanel('${s.id}')">Cancel</button></div>`;
+    } else if(s.lifecycle === "Open"){
+      studentCell = `<div class="c-grey">&mdash;</div>`;
+      availCell = `<div class="avail open">Open</div>`;
+      actionsCell = `<div class="c-actions"><button class="action-link" onclick="openAssignPanel('${s.id}')">Assign Student</button><button class="action-link" onclick="openEditPanel('${s.id}')">Edit</button><button class="action-link muted">Remove</button></div>`;
+    } else if(s.lifecycle === "Completed"){
+      studentCell = `<div class="c-dim">${s.student}</div>`;
+      availCell = `<div class="c-grey">&mdash;</div>`;
+      actionsCell = `<div class="c-actions"></div>`;
+    } else {
+      studentCell = `<div class="c-grey">${s.student}</div>`;
+      availCell = `<div class="c-grey">&mdash;</div>`;
+      actionsCell = `<div class="c-actions"></div>`;
+    }
+
+    row.innerHTML = `
+      <div class="c-name">${s.offering}</div>
+      <div class="c-dim">${s.dateLabel}</div>
+      ${studentCell}
+      ${availCell}
+      <div><span class="status ${statusBadgeClass(s.lifecycle)}">${statusBadgeText(s.lifecycle)}</span></div>
+      ${actionsCell}
+    `;
+
+    if(assigningSlotId === s.id){
+      const panel = document.createElement("div");
+      panel.className = "assign-panel";
+      panel.innerHTML = `
+        <div class="assign-panel-summary">
+          Assigning: <strong>${s.offering}</strong> with <strong>${s.instructor}</strong> in <strong>${s.room}</strong><br>
+          <strong>${s.dateLabel}</strong> &middot; Fee <strong>${fmt(s.fee)}</strong>
+        </div>
+        <div class="field">
+          <label>Student</label>
+          <select id="assign-student-select">
+            <option value="">Choose a student</option>
+            ${flatStudentOptions()}
+          </select>
+        </div>
+        <div class="assign-panel-actions">
+          <button class="btn primary small" onclick="confirmAssignStudent('${s.id}')">Assign Student</button>
+          <button class="btn small" onclick="closeAssignPanel()">Cancel</button>
+        </div>
+      `;
+      row.appendChild(panel);
+    }
+
+    if(assignResultForSlotId === s.id){
+      const chargeDate = chargeDateFromSlot(s);
+      const authHtml = s.fee > 0 ? `
+        <div class="auth-required-title">Payment Authorization Required</div>
+        <div class="result-line" style="color:var(--grey);">This lesson is booked. The parent will be asked to authorize this charge before it can be processed &mdash; assigning the student does not authorize payment on the parent's behalf.</div>
+      ` : `<div class="result-line" style="color:var(--grey); margin-top:8px;">This lesson has no fee, so no payment authorization is required.</div>`;
+      const panel = document.createElement("div");
+      panel.className = "assign-panel";
+      panel.innerHTML = `
+        <div class="result-panel">
+          <div class="result-title">Student Assigned</div>
+          <div class="result-line"><strong>${s.student}</strong> &middot; ${s.offering} &middot; ${s.dateLabel}</div>
+          <div class="result-amount">${fmt(s.fee)}</div>
+          <div class="result-line">Scheduled charge: ${chargeDate}</div>
+          ${authHtml}
+        </div>
+      `;
+      row.appendChild(panel);
+    }
+
+    if(editingSlotId === s.id){
+      const isBooked = s.lifecycle === "Booked";
+      const overrideValue = (!isBooked && s.fee !== OFFERING_DEFAULT_FEE) ? s.fee.toFixed(2) : "";
+      const feeField = isBooked
+        ? `<div class="field">
+            <label>Fee</label>
+            <div class="c-dim" style="font-size:13.5px;">${fmt(s.fee)} <span class="c-grey" style="font-size:12px;">&middot; The fee can't be changed once a lesson is booked.</span></div>
+          </div>`
+        : `<div class="field">
+            <label>Fee Override ($)</label>
+            <input type="text" id="edit-fee-override" placeholder="Offering default" value="${overrideValue}">
+          </div>`;
+      const summary = isBooked
+        ? `Currently booked: <strong>${s.student}</strong> &middot; ${s.offering} with <strong>${s.instructor}</strong><br><strong>${s.dateLabel}</strong> &middot; Fee <strong>${fmt(s.fee)}</strong>`
+        : `Editing open slot: ${s.offering} with <strong>${s.instructor}</strong><br><strong>${s.dateLabel}</strong> &middot; Fee <strong>${fmt(s.fee)}</strong>`;
+      const unassignSection = isBooked ? `
+        <div style="margin-top: 20px; border-top: 1px solid var(--line-soft); padding-top: 16px;">
+          <div class="section-sub" style="margin: 0 0 12px;">
+            Unassigning the student removes them from this lesson and returns the slot to Open. It is separate from saving the changes above. To end this lesson instead, use Cancel.
+          </div>
+          <button class="btn small" onclick="unassignStudentFromSlot('${s.id}')">Unassign Student</button>
+        </div>` : ``;
+
+      const panel = document.createElement("div");
+      panel.className = "assign-panel";
+      panel.innerHTML = `
+        <div class="assign-panel-summary">${summary}</div>
+        <div class="field">
+          <label>Offering</label>
+          <select id="edit-offering">${optionsHtml(["Choreo","Vocal Lessons"], s.offering)}</select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Instructor</label>
+            <select id="edit-instructor">${optionsHtml(EDIT_INSTRUCTORS, s.instructor)}</select>
+          </div>
+          <div class="field">
+            <label>Room</label>
+            <select id="edit-room">${optionsHtml(EDIT_ROOMS, s.room)}</select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="edit-date" value="${s.dateSort}">
+          </div>
+          <div class="field">
+            <label>Start Time</label>
+            <input type="time" id="edit-time" value="${timeFromLabel(s.dateLabel)}">
+          </div>
+        </div>
+        ${feeField}
+        <label class="check-row"><input type="checkbox" id="edit-override-conflict"> Override scheduling conflict</label>
+        <div id="edit-error" class="section-sub" style="color: var(--rose); margin: 0 0 10px;"></div>
+        <div class="assign-panel-actions">
+          <button class="btn primary small" onclick="saveLessonEdits('${s.id}')">Save Changes</button>
+          <button class="btn small" onclick="closeEditPanel()">Close</button>
+        </div>
+        ${unassignSection}
+      `;
+      row.appendChild(panel);
+    }
+
+    if(editResultForSlotId === s.id){
+      const panel = document.createElement("div");
+      panel.className = "assign-panel";
+      panel.innerHTML = `
+        <div class="result-panel" style="border-color: var(--line);">
+          <div class="result-title" style="color: var(--green);">Lesson Updated</div>
+          <div class="result-line">${s.offering} with ${s.instructor} &middot; ${s.room}</div>
+          <div class="result-line">${s.dateLabel} &middot; Fee ${fmt(s.fee)}${s.student ? ` &middot; <strong>${s.student}</strong>` : ``}</div>
+          ${editResultOverrode ? `<div class="result-line" style="color: var(--grey); margin-top:6px;">Saved with a scheduling conflict override.</div>` : ``}
+        </div>
+      `;
+      row.appendChild(panel);
+    }
+
+    if(cancellingSlotId === s.id){
+      const panel = document.createElement("div");
+      panel.className = "assign-panel";
+      panel.innerHTML = `
+        <div class="result-panel" style="border-color: var(--rose);">
+          <div class="result-title" style="color: var(--rose);">Cancel Lesson</div>
+          <div class="kv-row"><span class="k">Student</span><span class="v">${s.student}</span></div>
+          <div class="kv-row"><span class="k">Offering</span><span class="v">${s.offering}</span></div>
+          <div class="kv-row"><span class="k">Instructor</span><span class="v">${s.instructor}</span></div>
+          <div class="kv-row"><span class="k">Date/time</span><span class="v">${s.dateLabel}</span></div>
+          <div class="kv-row"><span class="k">Fee</span><span class="v">${fmt(s.fee)}</span></div>
+          <div class="result-line" style="margin-top:14px; color: var(--cream);">${cancelPaymentConsequence(s)}</div>
+          <div class="result-line" style="color:var(--grey); margin-top:8px;">Cancelling this lesson ends this lesson occurrence. If you only need to remove the student and keep the time available, unassign the student instead.</div>
+          <div class="assign-panel-actions" style="margin-top:14px;">
+            <button class="btn danger small" onclick="confirmCancelLesson('${s.id}')">Cancel Lesson</button>
+            <button class="btn small" onclick="closeCancelPanel()">Keep Lesson</button>
+          </div>
+        </div>
+      `;
+      row.appendChild(panel);
+    }
+
+    if(unassignResultForSlotId === s.id && unassignResultInfo){
+      const bookableNote = unassignResultInfo.becameParentBookable
+        ? `This time is within the normal parent self-service window and is now available for parents to book online again.`
+        : `The online booking window for this date has already passed, so this slot stays Open for staff assignment only &mdash; it will not appear for parent self-service.`;
+      const panel = document.createElement("div");
+      panel.className = "assign-panel";
+      panel.innerHTML = `
+        <div class="result-panel" style="border-color: var(--line);">
+          <div class="result-title" style="color: var(--cream-dim);">Student Unassigned</div>
+          <div class="result-line"><strong>${unassignResultInfo.previousStudent}</strong> has been unassigned from ${s.offering} &middot; ${s.dateLabel}.</div>
+          <div class="result-line" style="margin-top:8px;">${bookableNote}</div>
+          <div class="result-line" style="color: var(--grey); margin-top:8px;">Any unpaid Scheduled or Authorization Required charge for ${unassignResultInfo.previousStudent} on this lesson has been cancelled. If a payment had already been collected, it is not automatically refunded &mdash; refunds are handled separately through Billing.</div>
+        </div>
+      `;
+      row.appendChild(panel);
+    }
+
+    if(cancelResultForSlotId === s.id && cancelResultInfo){
+      const panel = document.createElement("div");
+      panel.className = "assign-panel";
+      panel.innerHTML = `
+        <div class="result-panel" style="border-color: var(--line);">
+          <div class="result-title" style="color: var(--rose);">Lesson Cancelled</div>
+          <div class="result-line"><strong>${s.student}</strong> &middot; ${s.offering} &middot; ${s.dateLabel} has been cancelled.</div>
+          <div class="result-line" style="color: var(--grey); margin-top:6px;">${cancelPaymentOutcome(s)}</div>
+        </div>
+      `;
+      row.appendChild(panel);
+    }
+
+    list.appendChild(row);
+  });
+
+  const total = filteredSlots.length;
+  const totalPages = Math.max(1, Math.ceil(total / SLOTS_PAGE_SIZE));
+  const rangeStart = total === 0 ? 0 : start + 1;
+  const rangeEnd = Math.min(start + SLOTS_PAGE_SIZE, total);
+  document.getElementById("slots-count-label").textContent = total === 0
+    ? "No lesson slots match these filters."
+    : `Showing ${rangeStart}\u2013${rangeEnd} of ${total}`;
+
+  const pageButtons = document.getElementById("slots-page-buttons");
+  pageButtons.innerHTML = "";
+  const prev = document.createElement("button");
+  prev.textContent = "Previous";
+  prev.disabled = slotsCurrentPage <= 1;
+  prev.addEventListener("click", () => { slotsCurrentPage--; renderSlots(); });
+  pageButtons.appendChild(prev);
+
+  for(let p = 1; p <= totalPages; p++){
+    const b = document.createElement("button");
+    b.textContent = p;
+    if(p === slotsCurrentPage) b.classList.add("current");
+    b.addEventListener("click", () => { slotsCurrentPage = p; renderSlots(); });
+    pageButtons.appendChild(b);
+  }
+
+  const next = document.createElement("button");
+  next.textContent = "Next";
+  next.disabled = slotsCurrentPage >= totalPages;
+  next.addEventListener("click", () => { slotsCurrentPage++; renderSlots(); });
+  pageButtons.appendChild(next);
+}
+
+function fmt(n){ return "$" + n.toFixed(2); }
+
+renderSlots();
+</script>
+</body>
+</html>
